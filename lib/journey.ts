@@ -67,6 +67,9 @@ export const JOURNEY: Phase[] = [
         mentalModelHook:
           "Trading space for time — find what you need in O(1) by remembering what you've seen.",
         analogies: ['Checkpoint Journey (prefix sum + hash map)'],
+        fundamentalsSlug: 'hash-maps',
+        fundamentalsBlurb:
+          'Frequency counting, complement lookups, and prefix sums stored in a map — the three tools that replace O(n²) scans with a single pass.',
         firstPass: [
           { id: '217', isFirstPass: true },
           { id: '387', isFirstPass: true },
