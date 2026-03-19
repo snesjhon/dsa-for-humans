@@ -1,64 +1,55 @@
 // =============================================================================
-// Merge Sorted Array — Step 2 of 2: File the Remaining Drawer B Documents — SOLUTION
+// Merge Sorted Array — Step 2 of 2: Fill from the Right — SOLUTION
 // =============================================================================
-// Goal: After the main loop ends, if Drawer B still has files (lastB >= 0),
-// copy them into the front slots of Drawer A. Drawer A's remaining files
-// are already in their correct positions — no action needed.
+// Goal: While Team B has trophies remaining, compare the current tallest from
+//       each team and place the winner at the write pedestal. Move that marker
+//       and the write marker left. Stop when Team B is exhausted.
 
 function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  // ✓ Step 1: Three-marker comparison loop — deal from the back
-  let lastA = m - 1;    // Last-A marker: back of Drawer A's real section
-  let lastB = n - 1;    // Last-B marker: back of Drawer B
-  let slot = m + n - 1; // Slot marker: fill from the back of Drawer A
+  // ✓ Step 1: Place the three markers (locked)
+  if (n === 0) return;
+  let p1 = m - 1;      // A-marker: rightmost real trophy on Team A's shelf
+  let p2 = n - 1;      // B-marker: rightmost trophy on Team B's shelf
+  let write = m + n - 1; // write marker: rightmost pedestal
 
-  while (lastA >= 0 && lastB >= 0) {
-    if (nums1[lastA] >= nums2[lastB]) {
-      nums1[slot--] = nums1[lastA--]; // Drawer A file is larger — place it
+  // Step 2: Fill from the right — compare tallest trophies, place the winner
+  while (p2 >= 0) {
+    if (p1 >= 0 && nums1[p1] > nums2[p2]) {
+      // Team A's trophy is taller — move it to the write pedestal
+      nums1[write] = nums1[p1];
+      p1--;
     } else {
-      nums1[slot--] = nums2[lastB--]; // Drawer B file is larger — place it
+      // Team B's trophy wins (or Team A is exhausted) — place Team B's
+      nums1[write] = nums2[p2];
+      p2--;
     }
+    write--; // write marker always steps left
   }
-
-  // Step 2: Copy any remaining Drawer B files into the front of Drawer A.
-  // (Drawer A's remaining files are already in their correct positions — no copy needed.)
-  while (lastB >= 0) {
-    nums1[slot--] = nums2[lastB--]; // Drawer B's leftovers fill the front slots
-  }
+  // When p2 < 0: Team B is done. Remaining Team A trophies are already placed.
 }
 
 // Tests — all must print PASS
-test('Drawer B all larger — B exhausts first (no copy needed)', () => {
-  const n1 = [1, 0];
-  merge(n1, 1, [2], 1);
-  return n1;
-}, [1, 2]);
+test('Team B empty: no merging needed', () => {
+  const n1 = [1, 2, 3]; merge(n1, 3, [], 0); return n1;
+}, [1, 2, 3]);
 
-test('Both drawers size 3, Drawer B all larger', () => {
-  const n1 = [1, 3, 5, 0, 0, 0];
-  merge(n1, 3, [6, 7, 8], 3);
-  return n1;
-}, [1, 3, 5, 6, 7, 8]);
-
-test('Interleaved values, Drawer B exhausts last', () => {
-  const n1 = [1, 2, 3, 0, 0, 0];
-  merge(n1, 3, [2, 5, 6], 3);
-  return n1;
+test('basic merge: alternating winners', () => {
+  const n1 = [1, 2, 3, 0, 0, 0]; merge(n1, 3, [2, 5, 6], 3); return n1;
 }, [1, 2, 2, 3, 5, 6]);
 
-test('Drawer A all larger — A exhausts first, Drawer B has leftovers', () => {
-  const n1 = [4, 5, 6, 0, 0, 0];
-  merge(n1, 3, [1, 2, 3], 3);
-  return n1;
-}, [1, 2, 3, 4, 5, 6]);
-
-test('Edge case: m=0, Drawer A empty — all files come from Drawer B', () => {
-  const n1 = [0];
-  merge(n1, 0, [1], 1);
-  return n1;
+test('Team A empty: all from Team B', () => {
+  const n1 = [0]; merge(n1, 0, [1], 1); return n1;
 }, [1]);
 
+test('all Team A smaller: Team B placed last', () => {
+  const n1 = [1, 2, 3, 0, 0, 0]; merge(n1, 3, [4, 5, 6], 3); return n1;
+}, [1, 2, 3, 4, 5, 6]);
+
+test('duplicates across teams', () => {
+  const n1 = [1, 2, 2, 0, 0, 0]; merge(n1, 3, [2, 3, 5], 3); return n1;
+}, [1, 2, 2, 2, 3, 5]);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-// (auto-folded in the editor — must be present for the file to run)
 
 function test(desc: string, fn: () => unknown, expected: unknown): void {
   try {

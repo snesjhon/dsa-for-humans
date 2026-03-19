@@ -1,65 +1,49 @@
 // =============================================================================
 // Merge Sorted Array — Complete Solution
 // =============================================================================
-// Analogy: Two sorted filing drawers merged from the back into one.
-// Drawer A (nums1) has m real files + n empty reserved slots.
-// Drawer B (nums2) has n files.
-// Three markers: lastA, lastB, slot — all start at the back.
 
 function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  let lastA = m - 1;    // Last-A marker: last real file in Drawer A
-  let lastB = n - 1;    // Last-B marker: last file in Drawer B
-  let slot = m + n - 1; // Slot marker: next position to fill (starts at the back)
+  if (n === 0) return; // Team B shelf is empty — nothing to do
 
-  // While both drawers have files: place the larger one at slot, step back
-  while (lastA >= 0 && lastB >= 0) {
-    if (nums1[lastA] >= nums2[lastB]) {
-      nums1[slot--] = nums1[lastA--]; // Drawer A file wins (or tie) — place and step back
+  let p1 = m - 1;       // A-marker: rightmost real trophy on Team A's shelf
+  let p2 = n - 1;       // B-marker: rightmost trophy on Team B's shelf
+  let write = m + n - 1; // write marker: rightmost pedestal (fills left from here)
+
+  while (p2 >= 0) {
+    if (p1 >= 0 && nums1[p1] > nums2[p2]) {
+      nums1[write] = nums1[p1]; // Team A's trophy is taller — claim this pedestal
+      p1--;
     } else {
-      nums1[slot--] = nums2[lastB--]; // Drawer B file wins — place and step back
+      nums1[write] = nums2[p2]; // Team B's trophy wins (or Team A is exhausted)
+      p2--;
     }
+    write--; // write marker steps left after every placement
   }
-
-  // Copy any remaining Drawer B files into the front of Drawer A
-  // (remaining Drawer A files are already in their correct positions)
-  while (lastB >= 0) {
-    nums1[slot--] = nums2[lastB--];
-  }
+  // p2 < 0: Team B is done. Any remaining Team A trophies are already in place.
 }
 
 // Tests — all must print PASS
-test('Drawer B all larger — B exhausts first', () => {
-  const n1 = [1, 0];
-  merge(n1, 1, [2], 1);
-  return n1;
-}, [1, 2]);
+test('Team B empty: no merging needed', () => {
+  const n1 = [1, 2, 3]; merge(n1, 3, [], 0); return n1;
+}, [1, 2, 3]);
 
-test('Both drawers size 3, Drawer B all larger', () => {
-  const n1 = [1, 3, 5, 0, 0, 0];
-  merge(n1, 3, [6, 7, 8], 3);
-  return n1;
-}, [1, 3, 5, 6, 7, 8]);
-
-test('Interleaved values with tie', () => {
-  const n1 = [1, 2, 3, 0, 0, 0];
-  merge(n1, 3, [2, 5, 6], 3);
-  return n1;
+test('basic merge: alternating winners', () => {
+  const n1 = [1, 2, 3, 0, 0, 0]; merge(n1, 3, [2, 5, 6], 3); return n1;
 }, [1, 2, 2, 3, 5, 6]);
 
-test('Drawer A all larger — A exhausts first, Drawer B has leftovers', () => {
-  const n1 = [4, 5, 6, 0, 0, 0];
-  merge(n1, 3, [1, 2, 3], 3);
-  return n1;
-}, [1, 2, 3, 4, 5, 6]);
-
-test('Edge case: m=0, Drawer A empty', () => {
-  const n1 = [0];
-  merge(n1, 0, [1], 1);
-  return n1;
+test('Team A empty: all from Team B', () => {
+  const n1 = [0]; merge(n1, 0, [1], 1); return n1;
 }, [1]);
 
+test('all Team A smaller: Team B placed last', () => {
+  const n1 = [1, 2, 3, 0, 0, 0]; merge(n1, 3, [4, 5, 6], 3); return n1;
+}, [1, 2, 3, 4, 5, 6]);
+
+test('duplicates across teams', () => {
+  const n1 = [1, 2, 2, 0, 0, 0]; merge(n1, 3, [2, 3, 5], 3); return n1;
+}, [1, 2, 2, 2, 3, 5]);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-// (auto-folded in the editor — must be present for the file to run)
 
 function test(desc: string, fn: () => unknown, expected: unknown): void {
   try {

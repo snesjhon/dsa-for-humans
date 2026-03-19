@@ -39,7 +39,7 @@ This skill creates mental model study guides that help understand algorithm conc
 
 **Validation command:**
 ```bash
-./.claude/skills/leet-mental/validate-mermaid.sh mental-model.md
+../../../.claude/skills/leet-mental/validate-mermaid.sh mental-model.md
 ```
 
 **Step files run command:**
@@ -428,7 +428,7 @@ After creating a mental model with mermaid charts, you MUST validate them:
 
 ```bash
 # Run the validation script on your mental-model.md file
-./.claude/skills/leet-mental/validate-mermaid.sh mental-model.md
+../../../.claude/skills/leet-mental/validate-mermaid.sh mental-model.md
 ```
 
 The script will:

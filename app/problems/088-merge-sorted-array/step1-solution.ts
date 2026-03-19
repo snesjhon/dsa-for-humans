@@ -1,48 +1,27 @@
 // =============================================================================
-// Merge Sorted Array — Step 1 of 2: Deal from the Back — SOLUTION
+// Merge Sorted Array — Step 1 of 2: Place the Three Markers — SOLUTION
 // =============================================================================
-// Goal: Set up the three file markers (lastA, lastB, slot) and run the main
-// comparison loop — while both drawers have files, place the larger one at slot,
-// stepping both the used-drawer marker and slot backward.
+// Goal: Handle the n=0 edge case (Team B shelf is empty) and initialize the
+//       three markers: A-marker (p1), B-marker (p2), and write marker.
 
 function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  let lastA = m - 1;    // Last-A marker: back of Drawer A's real section
-  let lastB = n - 1;    // Last-B marker: back of Drawer B
-  let slot = m + n - 1; // Slot marker: fill from the back of Drawer A
+  // If Team B's shelf is empty, no merging needed
+  if (n === 0) return;
 
-  // While both drawers have files: compare and place the larger one at slot
-  while (lastA >= 0 && lastB >= 0) {
-    if (nums1[lastA] >= nums2[lastB]) {
-      nums1[slot--] = nums1[lastA--]; // Drawer A's file is larger (or tied) — place it
-    } else {
-      nums1[slot--] = nums2[lastB--]; // Drawer B's file is larger — place it
-    }
-  }
-  // Note: if Drawer B still has files after the loop, they'd need copying (Step 2).
-  // These tests are chosen so Drawer B exhausts first — Step 2 not yet needed.
+  // Three markers: last real trophy in Team A, last in Team B, last pedestal
+  let p1 = m - 1;  // A-marker: rightmost real trophy on Team A's shelf
+  let p2 = n - 1;  // B-marker: rightmost trophy on Team B's shelf
+  let write = m + n - 1; // write marker: rightmost pedestal on the combined shelf
+
+  // (filling loop comes in step 2)
 }
 
-// Tests — all must print PASS
-test('Drawer B all larger — B exhausts first', () => {
-  const n1 = [1, 0];
-  merge(n1, 1, [2], 1);
-  return n1;
-}, [1, 2]);
-
-test('Both drawers size 3, Drawer B all larger', () => {
-  const n1 = [1, 3, 5, 0, 0, 0];
-  merge(n1, 3, [6, 7, 8], 3);
-  return n1;
-}, [1, 3, 5, 6, 7, 8]);
-
-test('Interleaved values, Drawer B exhausts last', () => {
-  const n1 = [1, 2, 3, 0, 0, 0];
-  merge(n1, 3, [2, 5, 6], 3);
-  return n1;
-}, [1, 2, 2, 3, 5, 6]);
+// Tests — step 1 covers the n=0 case; all must print PASS
+test('Team B empty: no merging needed', () => {
+  const n1 = [1, 2, 3]; merge(n1, 3, [], 0); return n1;
+}, [1, 2, 3]);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-// (auto-folded in the editor — must be present for the file to run)
 
 function test(desc: string, fn: () => unknown, expected: unknown): void {
   try {

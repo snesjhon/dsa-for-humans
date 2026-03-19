@@ -1,42 +1,19 @@
 // =============================================================================
-// Merge Sorted Array — Step 1 of 2: Deal from the Back
+// Merge Sorted Array — Step 1 of 2: Place the Three Markers
 // =============================================================================
-// Goal: Set up the three file markers (lastA, lastB, slot) and run the main
-// comparison loop — while both drawers have files, place the larger one at slot,
-// stepping both the used-drawer marker and slot backward.
-//
-// Implement the TODO below, then run: npx tsx step1-problem.ts
+// Goal: Handle the n=0 edge case (Team B shelf is empty) and initialize the
+//       three markers: A-marker (p1), B-marker (p2), and write marker.
 
 function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  // TODO: Set up lastA = m-1, lastB = n-1, slot = m+n-1.
-  //       While lastA >= 0 AND lastB >= 0:
-  //         compare nums1[lastA] vs nums2[lastB],
-  //         place the larger at nums1[slot],
-  //         step that drawer's marker and slot backward.
   throw new Error('not implemented');
 }
 
 // Tests
-test('Drawer B all larger — B exhausts first', () => {
-  const n1 = [1, 0];
-  merge(n1, 1, [2], 1);
-  return n1;
-}, [1, 2]);
-
-test('Both drawers size 3, Drawer B all larger', () => {
-  const n1 = [1, 3, 5, 0, 0, 0];
-  merge(n1, 3, [6, 7, 8], 3);
-  return n1;
-}, [1, 3, 5, 6, 7, 8]);
-
-test('Interleaved values, Drawer B exhausts last', () => {
-  const n1 = [1, 2, 3, 0, 0, 0];
-  merge(n1, 3, [2, 5, 6], 3);
-  return n1;
-}, [1, 2, 2, 3, 5, 6]);
+test('Team B empty: no merging needed', () => {
+  const n1 = [1, 2, 3]; merge(n1, 3, [], 0); return n1;
+}, [1, 2, 3]);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-// (auto-folded in the editor — must be present for the file to run)
 
 function test(desc: string, fn: () => unknown, expected: unknown): void {
   try {

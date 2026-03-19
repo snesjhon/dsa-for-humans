@@ -1,14 +1,14 @@
-# Merge Sorted Array — Mental Model
+# Merge Sorted Array - Mental Model
 
-## The Filing Drawer Analogy
+## The Trophy Display Merger Analogy
 
-Imagine you're an archivist with two sorted filing drawers. Drawer A holds numbered folders in order — say folders 3, 7, and 12 — but it also has empty hanging slots at the back, reserved for Drawer B's contents. Drawer B holds its own sorted folders: 2, 5, and 9. Your task is to merge both drawers into a single sorted drawer, using only Drawer A's space.
+Imagine a sports arena with two trophy display shelves — one for Team A, one for Team B. Both shelves are arranged identically: trophies sorted from shortest on the left to tallest on the right. The arena needs to consolidate them into one unified display on Team A's shelf, which conveniently has empty pedestals on the right reserved for the additional trophies.
 
-The naive approach — starting from the front and inserting Drawer B's smallest folders one by one — fails immediately. To place Drawer B's smallest folder before Drawer A's existing files, you'd have to shift all of Drawer A's contents rightward. But shifting rightward means overwriting the empty reserved slots you need. Chaos ensues before you've even placed the first file.
+The curator's insight: start from the rightmost pedestal and work backward. She places an **A-marker** at Team A's last real trophy, a **B-marker** at Team B's last trophy, and a **write marker** at the rightmost empty pedestal. Then she compares the two trophies at the markers — whichever is taller goes to the write pedestal. That marker moves left, and the write marker advances to the next pedestal. She fills from tallest to shortest, right to left.
 
-The insight is to flip your perspective: **start from the back.** The last empty slot in Drawer A should hold the largest folder from either source. You can find that by comparing the current last folder in Drawer A's real section against the current last folder in Drawer B. Place the larger one in the last empty slot, then step both that drawer's marker and the fill-slot marker one position backward. Repeat until one drawer runs out.
+The key is direction. By filling from the right, the curator writes into pedestals that are either empty or already claimed — the write marker never catches up to the A-marker. Team A's trophies are safe to read because the write marker always stays ahead of them.
 
-When Drawer B empties first, any remaining Drawer A files are already sitting in exactly the right positions — no copying needed. When Drawer A empties first, Drawer B still has small files that haven't been placed; simply copy them forward into the remaining front slots. Either way, the empty reserved space absorbs every file placed from the back without ever colliding with files you still need.
+When Team B's shelf is empty (the B-marker falls off the left), the process stops. Any remaining Team A trophies are already exactly where they belong — they were already on Team A's shelf and never needed to move.
 
 ---
 
@@ -16,41 +16,44 @@ When Drawer B empties first, any remaining Drawer A files are already sitting in
 
 ### The Setup
 
-You have two sorted drawers of numbered folders, where smaller numbers sit toward the front of each drawer. Drawer A has `m` real folders followed by `n` empty reserved slots — total length `m + n`. Drawer B has exactly `n` folders and no empty slots. Your job: fill all `m + n` positions of Drawer A with the combined folders in sorted order. You cannot use a second work surface — everything must happen within Drawer A's existing space.
+Team A's shelf holds `m` real trophies followed by `n` empty pedestals. Team B's shelf holds `n` trophies. Both shelves are sorted shortest to tallest. The task: rearrange Team A's shelf so it holds all `m + n` trophies in sorted order — without borrowing a third shelf.
 
-### The Three File Markers
+The `n` empty pedestals at the right end of Team A's shelf are the workspace. They're there on purpose, reserved for this merger.
 
-You place three sticky-note markers to guide your work:
+### The Three Markers
 
-**Last-A marker** — you slide it to the back of Drawer A's real section (position `m − 1`). This marks the highest-numbered real folder currently in Drawer A. As you pull files from Drawer A to place them, this marker steps one slot forward toward the front.
+Three markers drive the entire operation:
 
-**Last-B marker** — you slide it to the back of Drawer B (position `n − 1`). This marks the highest-numbered folder in Drawer B. As you pull files from Drawer B, this marker steps forward as well.
+- **The A-marker** (`p1`) starts at the rightmost real trophy on Team A's shelf — position `m - 1`. It tracks which of Team A's trophies hasn't been placed yet.
+- **The B-marker** (`p2`) starts at the rightmost trophy on Team B's shelf — position `n - 1`. It tracks which of Team B's trophies hasn't been placed yet.
+- **The write marker** (`write`) starts at the very last pedestal on Team A's shelf — position `m + n - 1`. This is where the next trophy goes.
 
-**Slot marker** — you slide it to the very last position in Drawer A (position `m + n − 1`). This is the next slot to fill. It starts at the back and steps forward with every file you place.
+All three markers only move left. The write marker steps left with every placement. The A-marker steps left only when a Team A trophy is placed; the B-marker only when a Team B trophy is placed.
 
-The slot marker always moves into space you have already filled or space that was always empty. It can never catch up with Last-A as long as both drawers are non-empty, because each placement step moves both the slot marker and whichever drawer-marker was used — they stay synchronized. This is the geometric guarantee that makes the in-place merge safe.
+The critical safety guarantee: at the start, write and p1 are exactly `n` positions apart (write = m+n-1, p1 = m-1, gap = n). Each step, write moves left by 1 and either p1 also moves left (gap stays the same) or p2 does (gap grows). The gap never shrinks — the write marker can never overtake the A-marker and overwrite a trophy you haven't read yet.
 
 ### Why This Approach
 
-If you tried to merge left-to-right, placing the smallest available folder at each position, you would immediately overwrite Drawer A's real files before comparing them. You would need a second temporary drawer — extra space proportional to the input size — to hold displaced files.
+If you tried to fill from the left, every time you placed a Team B trophy at the front, you'd have to shift Team A's existing trophies rightward to make room. That's O(n) shifting per insertion — the whole merge becomes O(n²).
 
-Going right-to-left costs no extra space. The reserved empty slots act as the working area. Because both source sections are already sorted, the largest unplaced folder from either drawer is always at the back of that drawer's remaining section — exactly where your markers point. You never need to scan backward or forward; the next comparison and placement is always O(1).
+The right-to-left approach uses the empty space that's already there. The write marker fills exactly those empty pedestals first, then slots that Team A trophies have already vacated. No shifting ever needed. Every placement is O(1), and you make exactly `m + n` placements total.
 
 ### Simple Example Through the Analogy
 
-Drawer A holds folders 1, 3, 5 followed by three empty reserved slots. Drawer B holds folders 2, 4, 6. Last-A points to folder 5, Last-B points to folder 6, Slot points to the rightmost empty slot.
+Team A's shelf: `[1, 2, 3, _, _, _]` — 3 real trophies, 3 reserved pedestals.
+Team B's shelf: `[2, 5, 6]` — 3 trophies.
 
-Comparison 1: Folder 5 vs Folder 6. Folder 6 is larger. Place Folder 6 in the last slot. Move Last-B back to folder 4; move Slot back one.
+A-marker at 3 (Team A's tallest). B-marker at 6 (Team B's tallest). Write marker at the last pedestal (slot 5).
 
-Comparison 2: Folder 5 vs Folder 4. Folder 5 is larger. Place Folder 5 in the now-last open slot. Move Last-A back to folder 3; move Slot back.
+**Round 1**: Compare 3 vs 6. Team B wins — place 6 at slot 5. B-marker moves left to 5. Write marker moves to slot 4.
 
-Comparison 3: Folder 3 vs Folder 4. Folder 4 is larger. Place Folder 4. Move Last-B back to folder 2; move Slot back.
+**Round 2**: Compare 3 vs 5. Team B wins again — place 5 at slot 4. B-marker moves to 2. Write marker moves to slot 3.
 
-Comparison 4: Folder 3 vs Folder 2. Folder 3 is larger. Place Folder 3. Move Last-A back to folder 1; move Slot back.
+**Round 3**: Compare 3 vs 2. Team A wins — place 3 at slot 3. A-marker moves left to 2. Write marker moves to slot 2.
 
-Comparison 5: Folder 1 vs Folder 2. Folder 2 is larger. Place Folder 2. Last-B is now empty; move Slot back.
+**Round 4**: Compare 2 vs 2. Tie — place Team B's 2 at slot 2. B-marker moves off the left end. Loop stops.
 
-No drawer-B folders remain. Folder 1 is already sitting at position 0 — exactly right. Done.
+Team A's shelf now reads `[1, 2, 2, 3, 5, 6]`. The remaining Trophy 1 and Trophy 2 from Team A were already in their correct positions — they never needed to move.
 
 Now you understand HOW to solve the problem. Let's build it step by step.
 
@@ -58,105 +61,72 @@ Now you understand HOW to solve the problem. Let's build it step by step.
 
 ## How I Think Through This
 
-I look at this as a three-marker fill-from-back problem. I set `lastA = m − 1` (the last real folder in Drawer A), `lastB = n − 1` (the last folder in Drawer B), and `slot = m + n − 1` (the last position in Drawer A). The core rule is: while both drawers still have files, compare `nums1[lastA]` against `nums2[lastB]`, write the larger value to `nums1[slot]`, and step both the used-drawer marker and `slot` backward by one. This invariant — always placing the largest remaining file at the furthest unfilled slot — guarantees sorted order because every file placed is larger than all files not yet placed. After the main loop ends, if `lastB` is still non-negative, Drawer B has leftover files that are all smaller than anything placed so far; I copy them into the front of Drawer A one by one. If it's `lastA` that's still non-negative, those Drawer A files are already in their correct positions and need no action.
+I start by noting that we're merging two sorted arrays in-place into nums1, which has exactly enough space for all elements. The key realization: if I work left to right I'd need to shift things — so I work right to left, filling the largest slot first. I set up three variables: `p1 = m - 1` (the A-marker at Team A's last real trophy), `p2 = n - 1` (the B-marker at Team B's last trophy), and `write = m + n - 1` (the write marker at the last pedestal). I loop as long as `p2 >= 0` — once Team B's shelf is empty, any remaining Team A trophies are already in place and don't need to move. Each iteration I compare `nums1[p1]` and `nums2[p2]` and place the larger at `nums1[write]`, decrementing that marker and write. The `p1 >= 0` guard handles the case where Team A's real section runs out before Team B does.
 
-Tracing `nums1 = [1, 3, 5, 0, 0, 0], m = 3, nums2 = [2, 4, 6], n = 3`:
-- Setup: lastA=2, lastB=2, slot=5. Drawer A real section: `[1, 3, 5]`
-- slot 5: 5 < 6 → place 6 at slot 5. lastB=1, slot=4. Drawer: `[1,3,5, _, _, 6]`
-- slot 4: 5 > 4 → place 5 at slot 4. lastA=1, slot=3. Drawer: `[1,3,5, _, 5, 6]`
-- slot 3: 3 < 4 → place 4 at slot 3. lastB=0, slot=2. Drawer: `[1,3,5, 4, 5, 6]`
-- slot 2: 3 > 2 → place 3 at slot 2. lastA=0, slot=1. Drawer: `[1,3,3, 4, 5, 6]`
-- slot 1: 1 < 2 → place 2 at slot 1. lastB=-1, slot=0. Drawer: `[1,2,3, 4, 5, 6]`
-- Loop ends (lastB < 0). Second while: lastB=-1, skip. nums1[0]=1 already correct. → `[1,2,3,4,5,6]` ✓
+Take `nums1 = [1, 2, 3, 0, 0, 0]`, `m = 3`, `nums2 = [2, 5, 6]`, `n = 3`:
+
+- Setup: `p1 = 2`, `p2 = 2`, `write = 5`
+- `nums1[2]=3` vs `nums2[2]=6`: 6 wins → place 6 at index 5; `p2=1`, `write=4`
+- `nums1[2]=3` vs `nums2[1]=5`: 5 wins → place 5 at index 4; `p2=0`, `write=3`
+- `nums1[2]=3` vs `nums2[0]=2`: 3 wins → place 3 at index 3; `p1=1`, `write=2`
+- `nums1[1]=2` vs `nums2[0]=2`: tie → place nums2's 2 at index 2; `p2=-1`, `write=1`
+- `p2 < 0`: loop ends. `nums1 = [1, 2, 2, 3, 5, 6]` ✓
 
 ---
 
 ## Building the Algorithm
 
-Each step introduces one concept from the Filing Drawer analogy, then a StackBlitz embed to try it.
+Each step introduces one concept from the Trophy Display Merger, then a StackBlitz embed to try it.
 
-### Step 1: Deal from the Back — The Three-Marker Comparison Loop
+### Step 1: Place the Three Markers
 
-The first concept is the backwards fill. Place three markers at their starting positions: `lastA` at the back of Drawer A's real section, `lastB` at the back of Drawer B, and `slot` at the very last position in Drawer A. Then run the comparison loop: while both drawers have files, compare the file at each drawer's marker, place the larger one at `slot`, and step the used marker and `slot` backward.
-
-Notice the comparison uses `>=` — when files have equal numbers, we take Drawer A's file first. This is arbitrary (either is correct), but consistently taking Drawer A avoids an unnecessary write: we're already placing `nums1[lastA]` back into `nums1[slot]`, and in a tie that's the same value either way.
-
-```mermaid
-flowchart TD
-    Start["lastA = m-1\nlastB = n-1\nslot = m+n-1"] --> Loop{"Both drawers\nhave files?"}
-    Loop -->|Yes| Compare{"nums1[lastA]\n>= nums2[lastB]?"}
-    Loop -->|No| Step2["Proceed to Step 2"]
-    Compare -->|"Yes: Drawer A file is larger"| PlaceA["nums1[slot] = nums1[lastA]\nlastA and slot step back"]
-    Compare -->|"No: Drawer B file is larger"| PlaceB["nums1[slot] = nums2[lastB]\nlastB and slot step back"]
-    PlaceA --> Loop
-    PlaceB --> Loop
-```
-
-Here's what the three markers look like tracing `nums1=[1,3,5,0,0,0], m=3, nums2=[6,7,8], n=3`:
-
-| Slot | Last-A file | Last-B file | Larger | Action | Drawer A state |
-|------|------------|------------|--------|--------|----------------|
-| 5 | 5 | 8 | B | place 8 at 5 | `[1,3,5,_,_,8]` |
-| 4 | 5 | 7 | B | place 7 at 4 | `[1,3,5,_,7,8]` |
-| 3 | 5 | 6 | B | place 6 at 3 | `[1,3,5,6,7,8]` |
-| — | lastB=-1 | — | loop ends | — | `[1,3,5,6,7,8]` ✓ |
+Before touching any trophy, the curator places her markers. We handle the simplest case first: if Team B's shelf is empty (`n === 0`), there's nothing to merge — return immediately. Otherwise, we set up the three starting positions.
 
 ```typescript
 function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  let lastA = m - 1;       // Last-A marker: back of Drawer A's real section
-  let lastB = n - 1;       // Last-B marker: back of Drawer B
-  let slot = m + n - 1;    // Slot marker: back of Drawer A (next slot to fill)
+  // If Team B's shelf is empty, no merging needed
+  if (n === 0) return;
 
-  // While both drawers have files: compare and place the larger one from the back
-  while (lastA >= 0 && lastB >= 0) {
-    if (nums1[lastA] >= nums2[lastB]) {
-      nums1[slot--] = nums1[lastA--]; // Drawer A file goes to the current slot
-    } else {
-      nums1[slot--] = nums2[lastB--]; // Drawer B file goes to the current slot
-    }
-  }
+  // Three markers: last real trophy in Team A, last in Team B, last pedestal
+  let p1 = m - 1;
+  let p2 = n - 1;
+  let write = m + n - 1;
+
+  // (filling loop comes next)
 }
 ```
 
 :::stackblitz{file="step1-problem.ts" step=1 total=2 solution="step1-solution.ts"}
 
-### Step 2: File the Remaining Drawer B Documents
+### Step 2: Fill from the Right
 
-When the main loop ends, one of two things happened: Drawer B ran out first, or Drawer A ran out first.
+Now the curator works backward. As long as Team B has trophies remaining (`p2 >= 0`), compare the current tallest from each team and place the winner at the write pedestal. The `p1 >= 0` guard handles the case where Team A's real section runs out first — when `p1 < 0`, there are no more Team A trophies to compare, so we always take from Team B.
 
-**If Drawer B ran out first** (`lastB < 0`): any remaining Drawer A files sit in exactly the right positions. File 1 at index 0 is already at index 0 — nothing to copy. The merge is complete.
+When `p2` drops below zero, the loop stops. Any remaining Team A trophies are already in their correct positions.
 
-**If Drawer A ran out first** (`lastA < 0`): Drawer B still holds files that are all smaller than every file already placed (otherwise they would have been placed by now). Copy them directly into the remaining front slots of Drawer A. The `slot` marker tells you exactly where to place each one.
-
-There is no third case to handle — no "remaining Drawer A" copy loop is needed. This asymmetry is the elegant payoff of choosing Drawer A as the output.
-
-```typescript
-  // After the main loop: copy any leftover Drawer B files
-  // (leftover Drawer A files are already in the correct positions — no action needed)
-  while (lastB >= 0) {
-    nums1[slot--] = nums2[lastB--]; // Drop Drawer B's remaining files into the front slots
-  }
+```mermaid
+graph TD
+    A["p1 = m-1, p2 = n-1<br/>write = m+n-1"] --> B{"p2 >= 0?"}
+    B -->|"No: Team B done"| G["Done!<br/>Team A leftovers already in place"]
+    B -->|"Yes"| C{"p1 >= 0 AND<br/>nums1[p1] > nums2[p2]?"}
+    C -->|"Team A wins"| D["nums1[write] = nums1[p1]<br/>p1--, write--"]
+    C -->|"Team B wins or Team A empty"| E["nums1[write] = nums2[p2]<br/>p2--, write--"]
+    D --> B
+    E --> B
 ```
 
-The full two-step solution:
-
 ```typescript
-function merge(nums1: number[], m: number, nums2: number[], n: number): void {
-  let lastA = m - 1;
-  let lastB = n - 1;
-  let slot = m + n - 1;
-
-  while (lastA >= 0 && lastB >= 0) {
-    if (nums1[lastA] >= nums2[lastB]) {
-      nums1[slot--] = nums1[lastA--];
-    } else {
-      nums1[slot--] = nums2[lastB--];
-    }
+while (p2 >= 0) {
+  if (p1 >= 0 && nums1[p1] > nums2[p2]) {
+    // Team A's trophy is taller — move it to the write pedestal
+    nums1[write] = nums1[p1];
+    p1--;
+  } else {
+    // Team B's trophy wins (or Team A is exhausted) — place Team B's
+    nums1[write] = nums2[p2];
+    p2--;
   }
-
-  while (lastB >= 0) {
-    nums1[slot--] = nums2[lastB--];
-  }
+  write--; // write marker always steps left
 }
 ```
 
@@ -166,31 +136,30 @@ function merge(nums1: number[], m: number, nums2: number[], n: number): void {
 
 ## Tracing through an Example
 
-Input: `nums1 = [1, 2, 3, 0, 0, 0], m = 3, nums2 = [2, 5, 6], n = 3`
+Input: `nums1 = [1, 2, 3, 0, 0, 0]`, `m = 3`, `nums2 = [2, 5, 6]`, `n = 3`
 
-| Step | Last-A Marker (lastA) | Drawer A file | Last-B Marker (lastB) | Drawer B file | Larger? | Action | Drawer A state |
-|------|----------------------|--------------|----------------------|--------------|---------|--------|----------------|
-| Start | 2 | 3 | 2 | 6 | — | initialize | `[1,2,3,0,0,0]` |
-| 1 | 2 | 3 | 2 | 6 | B | place 6 at slot 5, lastB=1, slot=4 | `[1,2,3,0,0,6]` |
-| 2 | 2 | 3 | 1 | 5 | B | place 5 at slot 4, lastB=0, slot=3 | `[1,2,3,0,5,6]` |
-| 3 | 2 | 3 | 0 | 2 | A | place 3 at slot 3, lastA=1, slot=2 | `[1,2,3,3,5,6]` |
-| 4 | 1 | 2 | 0 | 2 | A (tie) | place 2(A) at slot 2, lastA=0, slot=1 | `[1,2,2,3,5,6]` |
-| 5 | 0 | 1 | 0 | 2 | B | place 2(B) at slot 1, lastB=-1, slot=0 | `[1,2,2,3,5,6]` |
-| Done | 0 | 1 | -1 | — | — | lastB<0, loop ends; lastA=0 in place | `[1,2,2,3,5,6]` ✓ |
+| Step | A-Marker (p1) | Team A Trophy | B-Marker (p2) | Team B Trophy | Team A Wins? | Action | nums1 State |
+|------|--------------|---------------|--------------|---------------|-------------|--------|-------------|
+| Start | 2 | 3 | 2 | 6 | — | initialize markers | [1, 2, 3, 0, 0, 0] |
+| write=5 | 2 | 3 | 2 | 6 | No (3 < 6) | place 6 at [5]; p2=1, write=4 | [1, 2, 3, 0, 0, 6] |
+| write=4 | 2 | 3 | 1 | 5 | No (3 < 5) | place 5 at [4]; p2=0, write=3 | [1, 2, 3, 0, 5, 6] |
+| write=3 | 2 | 3 | 0 | 2 | Yes (3 > 2) | place 3 at [3]; p1=1, write=2 | [1, 2, 3, 3, 5, 6] |
+| write=2 | 1 | 2 | 0 | 2 | No (tie) | place 2 at [2]; p2=-1, write=1 | [1, 2, 2, 3, 5, 6] |
+| Done | 1 | 2 | -1 | — | — | p2 < 0, loop ends | [1, 2, 2, 3, 5, 6] |
 
 ---
 
 ## Common Misconceptions
 
-**"I should merge from the front, placing the smaller file at each position."** — From the front, the first position Drawer B wants to fill is `nums1[0]`, but that slot already holds a real Drawer A file. Placing Drawer B's smallest file there overwrites the Drawer A file you still need to compare. You'd need a temporary drawer to hold displaced files — extra space proportional to m. The backward merge sidesteps this entirely by filling only slots that are empty or already finalized.
+**"I need to copy leftover Team A trophies after the loop"** — When `p2` drops below zero, any remaining Team A trophies are exactly where they belong. They were already in nums1 at positions 0 through p1, and since we filled from the right, we never touched them. Only Team B's trophies actually need to be moved — Team A's are already home.
 
-**"After the main loop, I need to copy the remaining Drawer A files into their new positions."** — Drawer A's remaining files are already in `nums1`, already at the correct indices. If Drawer A still has files when Drawer B runs out, those files are all smaller than every file already placed (they would have been placed otherwise). Since the output is also `nums1`, nothing has moved — they simply stay where they are. Only Drawer B's files were in a separate array (`nums2`) and actually need copying.
+**"The write marker could overwrite a Team A trophy I haven't read yet"** — This can't happen. At the start, write and p1 are exactly `n` positions apart. Each step, write moves left by 1; either p1 also moves left by 1 (gap stays constant) or p2 moves instead (gap grows). The gap never shrinks below `n - number-of-B-placements-so-far`, which stays non-negative. The write marker never catches the A-marker.
 
-**"The equal-files case has to go to Drawer B, not Drawer A."** — Either is correct, and the result will be the same sorted array. The convention of taking Drawer A first (`>=`) is a minor style choice. Choosing Drawer B (`>` with else taking Drawer A) produces the same final merged array, just with the two equal files in the opposite relative order — both valid since the problem only asks for sorted order, not stable sort.
+**"I should loop while p1 >= 0 OR p2 >= 0"** — Only loop while `p2 >= 0`. Team A's remaining trophies are already in nums1 at the right relative positions — writing them back to where they already sit wastes time and is error-prone. The loop ends precisely when Team B is exhausted.
 
-**"I need a third while loop to handle the remaining Drawer A files."** — There are only two possible post-loop states: Drawer B still has files (copy them forward), or Drawer B is empty (Drawer A files are already in place). A third `while (lastA >= 0)` loop would run correctly — it would just do nothing useful, since `nums1[slot--] = nums1[lastA--]` copies a value to itself (same array, and `slot` and `lastA` advance together). It's harmless but unnecessary.
+**"On a tie, I must place Team A's trophy"** — Either works. Taking Team B's trophy on ties is slightly cleaner: when the loop ends, you've guaranteed all of Team B is placed, and Team A's remainder is untouched. But the values are equal, so correctness holds either way.
 
-**"This approach requires m > 0 to work."** — When `m = 0`, `lastA` starts at `-1`, the main while loop never executes, and the second while loop copies all of Drawer B into the front of Drawer A. The edge case handles itself naturally — no special-casing needed.
+**"This only works for arrays of the exact right sizes"** — Correct, and that's the problem's guarantee: nums1 has exactly `m + n` slots (`m` real values plus `n` zeros). The safety invariant that write never overtakes p1 relies on that exact `n`-slot buffer. Don't attempt this pattern on an undersized array.
 
 ---
 
