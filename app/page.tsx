@@ -286,12 +286,6 @@ export default function HomePage() {
             }}>
               Start the learning path ↓
             </a>
-            <Link href="/train" style={{
-              fontSize: '0.875rem', fontWeight: 500,
-              color: 'var(--fg-comment)', textDecoration: 'none',
-            }}>
-              Test your recognition →
-            </Link>
           </div>
         </div>
       </section>
@@ -368,12 +362,6 @@ export default function HomePage() {
               {totalSections} mental models · {totalProblems} problems
             </p>
           </div>
-          <Link href="/patterns" style={{
-            fontSize: '0.8125rem', fontWeight: 500,
-            color: 'var(--fg-comment)', textDecoration: 'none', paddingBottom: 2,
-          }}>
-            View by pattern →
-          </Link>
         </div>
 
         {/* Curriculum — each entry is a mental model step */}
@@ -550,32 +538,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* End-of-phase nudge */}
-              {idx < curriculum.length - 1 && curriculum[idx + 1].phase.number !== phase.number && (
-                <div style={{
-                  display: 'flex', alignItems: 'center',
-                  justifyContent: 'space-between', gap: 16,
-                  padding: '16px 20px', marginTop: 20,
-                  background: 'var(--bg-alt)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.75rem',
-                }}>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--fg-comment)', margin: 0, lineHeight: 1.5 }}>
-                    Finished Phase {phase.number}? Test whether the patterns are sticking.
-                  </p>
-                  <Link href="/train" style={{
-                    flexShrink: 0,
-                    padding: '6px 14px', borderRadius: 6,
-                    fontSize: '0.8rem', fontWeight: 600,
-                    color: 'var(--blue)',
-                    border: '1px solid color-mix(in srgb, var(--blue) 30%, transparent)',
-                    background: 'var(--blue-tint)',
-                    textDecoration: 'none',
-                  }}>
-                    Test recognition →
-                  </Link>
-                </div>
-              )}
 
             </div>
           )

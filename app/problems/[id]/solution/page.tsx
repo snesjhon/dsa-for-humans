@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getAllProblems, getProblemById, readMarkdownFile } from '@/lib/content'
-import { PATTERN_META } from '@/lib/patterns'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface Props {
@@ -23,20 +22,10 @@ export default function SolutionPage({ params }: Props) {
     ? readMarkdownFile(problem.files.studyGuide).content
     : null
 
-  const primaryPattern = problem.patterns[0]
-
   return (
     <div className="max-w-3xl mx-auto space-y-5">
       <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--fg-gutter)' }}>
         <Link href="/" className="hover:opacity-70 transition-opacity">Path</Link>
-        {primaryPattern && (
-          <>
-            <span>/</span>
-            <Link href={`/patterns/${primaryPattern}`} className="hover:opacity-70 transition-opacity" style={{ color: 'var(--fg-comment)' }}>
-              {PATTERN_META[primaryPattern]?.label}
-            </Link>
-          </>
-        )}
         <span>/</span>
         <Link href={`/problems/${problem.id}`} className="hover:opacity-70 transition-opacity" style={{ color: 'var(--fg-comment)' }}>
           {problem.id}

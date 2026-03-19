@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getAllProblems, getProblemById, readMarkdownFile, getProblemsByPattern } from '@/lib/content'
-import { PATTERN_META } from '@/lib/patterns'
+import { getAllProblems, getProblemById, readMarkdownFile } from '@/lib/content'
 import { getSectionsForProblem } from '@/lib/journey'
 import { extractHeadings } from '@/lib/headings'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
@@ -33,7 +32,6 @@ export default function ProblemPage({ params }: Props) {
   const journeySections = getSectionsForProblem(params.id)
   const primarySection = journeySections[0]
 
-  const primaryPattern = problem.patterns[0]
   let prevProblem = null
   let nextProblem = null
 
@@ -42,11 +40,6 @@ export default function ProblemPage({ params }: Props) {
     const idx = allInSection.findIndex(p => p.id === params.id)
     if (idx > 0) prevProblem = getAllProblems().find(p => p.id === allInSection[idx - 1].id) || null
     if (idx < allInSection.length - 1) nextProblem = getAllProblems().find(p => p.id === allInSection[idx + 1].id) || null
-  } else if (primaryPattern) {
-    const siblings = getProblemsByPattern(primaryPattern)
-    const idx = siblings.findIndex(p => p.id === params.id)
-    if (idx > 0) prevProblem = siblings[idx - 1]
-    if (idx < siblings.length - 1) nextProblem = siblings[idx + 1]
   }
 
   return (
@@ -72,31 +65,15 @@ export default function ProblemPage({ params }: Props) {
           <h1 className="text-5xl font-bold leading-tight" style={{ color: 'var(--fg)' }}>
             {problem.title}
           </h1>
-          <div className="mt-4 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium" style={{ color: 'var(--fg-gutter)' }}>Pattern</span>
-              {problem.patterns.map(p => (
-                <Link key={p} href={`/patterns/${p}`}
-                  className="text-xs px-2.5 py-1 rounded-full font-medium transition-opacity hover:opacity-80"
-                  style={{ background: 'var(--purple-tint)', color: 'var(--purple)', border: '1px solid color-mix(in srgb, var(--purple) 25%, transparent)' }}>
-                  {PATTERN_META[p]?.icon && <span className="mr-1">{PATTERN_META[p].icon}</span>}
-                  {PATTERN_META[p]?.label || p}
-                </Link>
-              ))}
-              {problem.hasSolution && (
-                <Link href={`/problems/${problem.id}/solution`}
-                  className="ml-auto text-sm px-4 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-90 text-white"
-                  style={{ background: 'var(--green)' }}>
-                  View Solution →
-                </Link>
-              )}
+          {problem.hasSolution && (
+            <div className="mt-4">
+              <Link href={`/problems/${problem.id}/solution`}
+                className="text-sm px-4 py-1.5 rounded-lg font-medium transition-opacity hover:opacity-90 text-white"
+                style={{ background: 'var(--green)' }}>
+                View Solution →
+              </Link>
             </div>
-            {primaryPattern && PATTERN_META[primaryPattern]?.description && (
-              <p className="text-sm" style={{ color: 'var(--fg-alt)' }}>
-                {PATTERN_META[primaryPattern].description}
-              </p>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Mental Model — bare prose */}
@@ -105,22 +82,6 @@ export default function ProblemPage({ params }: Props) {
         ) : (
           <p className="text-base" style={{ color: 'var(--fg-gutter)' }}>Mental model coming soon.</p>
         )}
-
-        {/* Trainer CTA */}
-        <div className="rounded-xl p-5 flex items-center justify-between gap-4"
-          style={{ background: 'var(--blue-tint)', border: '1px solid color-mix(in srgb, var(--blue) 25%, transparent)' }}>
-          <div>
-            <p className="font-semibold" style={{ color: 'var(--fg)' }}>Test your pattern recognition</p>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--fg-alt)' }}>
-              Can you identify the right pattern before seeing the solution?
-            </p>
-          </div>
-          <Link href="/train"
-            className="flex-shrink-0 text-sm px-4 py-2 rounded-lg font-medium transition-opacity hover:opacity-90 text-white"
-            style={{ background: 'var(--blue)' }}>
-            Start Training →
-          </Link>
-        </div>
 
         {/* Prev/Next */}
         <div className="flex items-center justify-between pt-6" style={{ borderTop: '1px solid var(--border)' }}>
