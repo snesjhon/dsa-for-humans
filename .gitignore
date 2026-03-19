@@ -1,0 +1,12 @@
+node_modules
+.next
+.obsidian
+
+# Claude Code — ignore personal settings, keep shared skills
+.claude/settings.local.json
+.claude/settings.json
+docs/superpowers/
+.superpowers/
+tsconfig.tsbuildinfo
+.env.local
+.env

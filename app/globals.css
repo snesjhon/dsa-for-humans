@@ -1,0 +1,421 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DSA for Humans — GitLab Light (default)
+   Source: github.com/snesjhon/gitlab-nvim-theme
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:           #FAFAFF;
+  --bg-alt:       #F0F0FA;
+  --bg-highlight: #EFEFFC;
+  --sel-bg:       #E2DEF8;
+  --border:       #D0D0E8;
+  --fg:           #303030;
+  --fg-alt:       #585870;
+  --fg-comment:   #7878A8;
+  --fg-gutter:    #A0A0C0;
+
+  --blue:         #006CD8;
+  --link:         #165390;
+  --green:        #0A7F3D;
+  --orange:       #AF551D;
+  --red:          #A31700;
+  --purple:       #583CAC;
+  --cyan:         #00798A;
+
+  --blue-tint:    #E8F0FD;
+  --green-tint:   #E6F4EC;
+  --orange-tint:  #FDF3E6;
+  --purple-tint:  #EDE8F8;
+}
+
+/* GitLab Dark — .dark on <html> */
+.dark {
+  --bg:           #28262B;
+  --bg-alt:       #222025;
+  --bg-highlight: #312F35;
+  --sel-bg:       #5D5277;
+  --border:       #3E3C42;
+  --fg:           #FFFFFF;
+  --fg-alt:       #AEADA8;
+  --fg-comment:   #8B7AA0;
+  --fg-gutter:    #666666;
+
+  --blue:         #7FB6ED;
+  --link:         #BFA5C0;
+  --green:        #52B87A;
+  --orange:       #D99530;
+  --red:          #F57F6C;
+  --purple:       #AD95E9;
+  --cyan:         #32C5D2;
+  --pink:         #F88AAF;
+
+  --blue-tint:    #1A2838;
+  --green-tint:   #1F3828;
+  --orange-tint:  #342A12;
+  --purple-tint:  #2D2650;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-feature-settings: 'kern' 1, 'liga' 1;
+}
+
+/* =============================================================================
+   Path page
+   ============================================================================= */
+.path-phase > summary { list-style: none; cursor: pointer; }
+.path-phase > summary::-webkit-details-marker { display: none; }
+.path-phase[open] .path-chevron { transform: rotate(90deg); }
+
+.path-label-cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+/* =============================================================================
+   Highlight.js
+   ============================================================================= */
+.hljs {
+  background: transparent !important;
+}
+
+/* =============================================================================
+   Prose
+   ============================================================================= */
+.dfh-prose {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--fg-alt);
+}
+
+.dfh-h1 {
+  font-family: var(--font-display, inherit);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--fg);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.dfh-h1:first-child { margin-top: 0; }
+
+.dfh-h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--fg);
+  margin-top: 3rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dfh-h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--fg);
+  margin-top: 2.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.dfh-h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-comment);
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.dfh-p {
+  margin-bottom: 1.5rem;
+  color: var(--fg-alt);
+}
+.dfh-p:last-child { margin-bottom: 0; }
+
+.dfh-ul,
+.dfh-ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--fg-alt);
+}
+.dfh-ul { list-style-type: disc; }
+.dfh-ol { list-style-type: decimal; }
+.dfh-li {
+  margin-bottom: 0.35rem;
+  line-height: 1.65;
+}
+.dfh-li:last-child { margin-bottom: 0; }
+.dfh-li > .dfh-ul,
+.dfh-li > .dfh-ol {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.dfh-code-inline {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.875em;
+  font-weight: 500;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+  background: var(--bg-highlight);
+  color: var(--purple);
+  border: 1px solid var(--border);
+}
+
+.dfh-pre {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  background: var(--bg-alt) !important;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  margin: 1.75rem 0;
+}
+.dfh-pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+
+.dfh-blockquote {
+  border-left: 3px solid var(--purple);
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  margin: 1.75rem 0;
+  font-style: italic;
+  color: var(--fg-comment);
+}
+.dfh-blockquote .dfh-p { margin-bottom: 0; color: var(--fg-comment); }
+
+.dfh-table-wrap {
+  overflow-x: auto;
+  margin: 1.75rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+}
+.dfh-table { width: 100%; border-collapse: collapse; }
+.dfh-thead { background: var(--bg-alt); }
+.dfh-th {
+  padding: 0.625rem 1rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-comment);
+  border-bottom: 1px solid var(--border);
+}
+.dfh-td {
+  padding: 0.625rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--fg-alt);
+  border-bottom: 1px solid var(--bg-highlight);
+}
+.dfh-table tr:last-child .dfh-td { border-bottom: none; }
+
+.dfh-hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem 0;
+}
+
+.dfh-strong { font-weight: 700; color: var(--fg); }
+.dfh-em { font-style: italic; color: var(--fg-alt); }
+.dfh-a {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: opacity 0.15s;
+}
+.dfh-a:hover { opacity: 0.75; }
+
+.dfh-pre .hljs { background: transparent !important; padding: 0; }
+
+/* =============================================================================
+   Cards / rows / buttons
+   ============================================================================= */
+.gl-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  transition: border-color 150ms, background 150ms;
+}
+.gl-card:hover {
+  border-color: var(--purple);
+  background: var(--bg-alt);
+}
+
+.gl-card-blue:hover { border-color: var(--blue); }
+
+.gl-row {
+  transition: background 100ms;
+  border-radius: 0.375rem;
+}
+.gl-row:hover { background: var(--bg-highlight); }
+
+.gl-btn-ghost {
+  border: 1px solid var(--border);
+  color: var(--fg-alt);
+  background: var(--bg-alt);
+  transition: border-color 150ms, color 150ms;
+}
+.gl-btn-ghost:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+/* =============================================================================
+   Path — problem links & guide buttons
+   ============================================================================= */
+.problem-link { text-decoration: none; }
+.problem-link:hover .problem-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--fg-gutter);
+}
+
+.guide-btn {
+  transition: opacity 150ms, transform 120ms;
+}
+.guide-btn:hover {
+  opacity: 0.82;
+  transform: translateX(3px);
+}
+
+/* ── WebContainer Embed ─────────────────────────────────────────────────── */
+.dfh-wc {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+}
+
+.dfh-wc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt, var(--bg));
+  height: 40px;
+}
+
+.dfh-wc-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.dfh-wc-tab {
+  padding: 0 14px;
+  height: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  color: var(--fg-gutter);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.dfh-wc-tab:hover {
+  color: var(--fg-alt);
+}
+
+.dfh-wc-tab.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+.dfh-wc-step {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  color: var(--fg-gutter);
+}
+
+.dfh-wc-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.dfh-wc-editor {
+  border-bottom: 1px solid var(--border);
+}
+
+.dfh-wc-editor .cm-editor {
+  height: 400px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.dfh-wc-editor .cm-editor.cm-focused {
+  outline: none;
+}
+
+.dfh-wc-editor .cm-scroller {
+  overflow: auto;
+}
+
+.dfh-wc-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.dfh-wc-run {
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.dfh-wc-run:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.dfh-wc-run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dfh-wc-output {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+  color: var(--fg-alt);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border-top: 1px solid var(--border);
+}
+
+.dfh-wc-output.error {
+  color: var(--red);
+  background: var(--bg-highlight);
+}
+
+/* =============================================================================
+   Scrollbar
+   ============================================================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-alt); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-gutter); }
