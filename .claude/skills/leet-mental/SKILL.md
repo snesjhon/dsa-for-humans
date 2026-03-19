@@ -63,7 +63,16 @@ npx tsx solution.ts # Expected: PASS lines only
 
 ## Required Sections (in order)
 
-Every mental model MUST have these six sections in this order:
+Every mental model MUST have these seven sections in this order:
+
+### 0. The Problem
+
+The verbatim LeetCode problem statement followed by the provided examples. This section comes before the analogy — it anchors the reader so they know exactly what they are solving before any mental model is introduced.
+
+Format:
+- One paragraph with the exact problem description (copy it verbatim from LeetCode)
+- Each example as a labeled block: **Example 1**, **Example 2**, etc., with `Input:` and `Output:` lines
+- No commentary, no analysis, no analogy — just the raw problem
 
 ### 1. The [Analogy Name] Analogy (intro paragraph)
 
@@ -215,6 +224,24 @@ By the end of the final embed, the reader has a complete working solution. The d
 
 ```markdown
 # [Problem Name] - Mental Model
+
+## The Problem
+
+[Verbatim LeetCode problem description — one paragraph, copy exactly as written.]
+
+**Example 1:**
+```
+Input: [input values]
+Output: [expected output]
+```
+
+**Example 2:**
+```
+Input: [input values]
+Output: [expected output]
+```
+
+---
 
 ## The [Single Analogy Name] Analogy
 

@@ -1,5 +1,23 @@
 # Remove Duplicates from Sorted Array - Mental Model
 
+## The Problem
+
+Given an integer array `nums` sorted in non-decreasing order, remove the duplicates **in-place** such that each unique element appears only once. The relative order of the elements should be kept the same. Then return the number of unique elements in `nums`.
+
+**Example 1:**
+```
+Input: nums = [1,1,2]
+Output: 2, nums = [1,2,_]
+```
+
+**Example 2:**
+```
+Input: nums = [0,0,1,1,1,2,2,3,3,4]
+Output: 5, nums = [0,1,2,3,4,_,_,_,_,_]
+```
+
+---
+
 ## The Librarian's Two Hands Analogy
 
 Imagine a librarian standing before a long sorted bookshelf where some titles appear more than once — perhaps three copies of *Dune*, two copies of *1984*, and a single copy of *Brave New World*. Her job: rearrange the shelf so that every unique title appears exactly once at the front, and report how many unique titles she found.
