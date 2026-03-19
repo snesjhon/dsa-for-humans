@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 1: Reverse Array — SOLUTION
+// Arrays & Strings — Level 2, Exercise 1: Swap the Inspectors — SOLUTION
 // =============================================================================
 function reverseArray(arr: number[]): void {
   let L = 0, R = arr.length - 1;

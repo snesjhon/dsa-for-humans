@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 1: Build Prefix Sums — SOLUTION
+// Arrays & Strings — Level 3, Exercise 1: Send the Left Messenger — SOLUTION
 // =============================================================================
 function buildPrefixSums(nums: number[]): number[] {
   const prefix = new Array(nums.length).fill(0);

@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 3: Compact Evens — SOLUTION
+// Arrays & Strings — Level 1, Exercise 3: Even Items Only — SOLUTION
 // =============================================================================
 function compactEvens(nums: number[]): number {
   let w = 0;

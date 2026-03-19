@@ -1,14 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 2: Range Sum — SOLUTION
-// =============================================================================
-// Goal: Use a prefix sum array to answer range queries in O(1).
-//
-// Return the sum of nums[left..right] (inclusive, 0-based).
-// Build a prefix array first, then compute the answer in O(1).
-//
-// Example:
-//   rangeSum([1, 2, 3, 4], 1, 3) → 9   (2 + 3 + 4)
-//   rangeSum([1, 2, 3, 4], 0, 0) → 1   (just nums[0])
+// Arrays & Strings — Level 3, Exercise 2: Ask the Left Messenger — SOLUTION
 // =============================================================================
 function rangeSum(nums: number[], left: number, right: number): number {
   const prefix = new Array(nums.length + 1).fill(0);

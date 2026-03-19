@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 2: Remove Element — SOLUTION
+// Arrays & Strings — Level 1, Exercise 2: Filter the Belt — SOLUTION
 // =============================================================================
 function removeElement(nums: number[], val: number): number {
   let w = 0;

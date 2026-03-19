@@ -1,11 +1,15 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 3: Two Sum (Sorted)
+// Arrays & Strings — Level 2, Exercise 3: Inspectors Find the Pair
 // =============================================================================
-// Goal: Use two converging pointers on a sorted array to find a target pair.
+// Goal: Use the two inspectors' sum to decide which one moves inward.
 //
-// Given a sorted array and a target sum, return the 1-based indices of the
-// two numbers that add up to target. Exactly one solution is guaranteed.
-// Do not use a hash map — use two converging pointers.
+// The sorted belt lets the inspectors reason about direction:
+//   - Sum too small → left inspector steps right (larger values are ahead)
+//   - Sum too large → right inspector steps left (smaller values are behind)
+//   - Sum matches   → report the inspectors' positions
+//
+// Return 1-based indices of the two numbers that add up to target.
+// Exactly one solution is guaranteed. Do not use a hash map.
 //
 // Example:
 //   twoSumSorted([2, 7, 11, 15], 9) → [1, 2]

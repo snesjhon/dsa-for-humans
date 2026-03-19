@@ -1,10 +1,11 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 1: Build Prefix Sums
+// Arrays & Strings — Level 3, Exercise 1: Send the Left Messenger
 // =============================================================================
-// Goal: Practice the forward pass — accumulate context from the left.
+// Goal: Practice the forward pass — the left messenger collects context.
 //
-// Build a prefix sum array where prefix[i] equals the sum of nums[0..i-1]
-// (NOT including nums[i]). prefix[0] is always 0.
+// The left messenger walks left-to-right. Before reaching each slot i,
+// it records what it has accumulated so far (the sum of everything to its left).
+// prefix[i] = sum of nums[0..i-1]. prefix[0] is always 0 (nothing to the left).
 //
 // Example:
 //   buildPrefixSums([1, 2, 3, 4]) → [0, 1, 3, 6]

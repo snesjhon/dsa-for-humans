@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 3: Two Sum (Sorted) — SOLUTION
+// Arrays & Strings — Level 2, Exercise 3: Inspectors Find the Pair — SOLUTION
 // =============================================================================
 function twoSumSorted(nums: number[], target: number): [number, number] {
   let L = 0, R = nums.length - 1;

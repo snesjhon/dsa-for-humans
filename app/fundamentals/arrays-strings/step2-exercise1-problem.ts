@@ -1,8 +1,11 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 1: Reverse Array
+// Arrays & Strings — Level 2, Exercise 1: Swap the Inspectors
 // =============================================================================
-// Goal: Use two converging pointers to reverse an array in-place.
+// Goal: Get the two inspectors moving before they need to make decisions.
 //
+// Place the left inspector at index 0 and the right inspector at the last slot.
+// At each step: the two inspectors swap what they're holding, then both
+// walk one step inward. They keep going until they meet in the middle.
 // Reverse the array in-place. No return value — modify arr directly.
 //
 // Example:

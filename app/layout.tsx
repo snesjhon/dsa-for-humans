@@ -48,41 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </span>
             </Link>
 
-            <div className="flex items-center gap-1" style={{ marginLeft: 8 }}>
-              {[
-                { href: '/', label: 'Path' },
-                { href: '/patterns', label: 'Patterns' },
-              ].map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  style={{
-                    padding: '4px 11px',
-                    borderRadius: 6,
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: 'var(--fg-alt)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="ml-auto flex items-center gap-4">
-              <Link
-                href="/train"
-                style={{
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  color: 'var(--fg-gutter)',
-                  textDecoration: 'none',
-                }}
-              >
-                Test recognition
-              </Link>
-            </div>
+            <div className="ml-auto" />
           </nav>
         </header>
         <main className="w-full" style={{ padding: '0 24px' }}>

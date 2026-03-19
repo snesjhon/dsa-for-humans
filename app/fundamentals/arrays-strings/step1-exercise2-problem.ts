@@ -1,14 +1,14 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 2: Remove Element
+// Arrays & Strings — Level 1, Exercise 2: Filter the Belt
 // =============================================================================
-// Goal: Use the write cursor to filter out a specific value in-place.
+// Goal: Use the scanner + stamper to reject a specific value.
 //
-// Remove all occurrences of val from nums in-place.
-// The order of the remaining elements does not matter.
-// Return the count of elements that are not equal to val.
+// The belt carries mixed items. Your stamper has one rule: skip anything
+// equal to val. Everything else is a keeper — stamp it and advance.
+// Return the count of items stamped (items not equal to val).
 //
 // Example:
-//   removeElement([3, 2, 2, 3], 3)       → 2   (array contains [2, 2, ...])
+//   removeElement([3, 2, 2, 3], 3)          → 2   (belt becomes [2, 2, ...])
 //   removeElement([0, 1, 2, 2, 3, 0, 4], 2) → 5
 // =============================================================================
 function removeElement(nums: number[], val: number): number {

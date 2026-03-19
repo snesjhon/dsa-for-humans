@@ -1,14 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 3: Product Except Self — SOLUTION
-// =============================================================================
-// Goal: Use prefix and suffix products to build the output without division.
-//
-// Return an array output where output[i] is the product of every element
-// in nums except nums[i]. You may not use division.
-//
-// Example:
-//   productExceptSelf([1, 2, 3, 4]) → [24, 12, 8, 6]
-//   productExceptSelf([2, 3])       → [3, 2]
+// Arrays & Strings — Level 3, Exercise 3: Both Messengers, Combined — SOLUTION
 // =============================================================================
 function productExceptSelf(nums: number[]): number[] {
   const n = nums.length;

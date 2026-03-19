@@ -1,10 +1,13 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 2: Range Sum
+// Arrays & Strings — Level 3, Exercise 2: Ask the Left Messenger
 // =============================================================================
-// Goal: Use a prefix sum array to answer range queries in O(1).
+// Goal: Use the left messenger's notes to answer range questions in O(1).
+//
+// The left messenger already recorded prefix[i] = sum of everything before i.
+// A range sum [left, right] = prefix[right+1] − prefix[left].
+// Build the prefix array first, then compute each answer in one subtraction.
 //
 // Return the sum of nums[left..right] (inclusive, 0-based).
-// Build a prefix array first, then compute the answer in O(1).
 //
 // Example:
 //   rangeSum([1, 2, 3, 4], 1, 3) → 9   (2 + 3 + 4)

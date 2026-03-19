@@ -1,11 +1,16 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 1: Remove Duplicates — SOLUTION
+// Arrays & Strings — Level 1, Exercise 1: Stamp the Keepers — SOLUTION
 // =============================================================================
-function removeDuplicates(nums: number[]): number {
-  if (nums.length === 0) return 0;
-  let w = 1;
-  for (let r = 1; r < nums.length; r++) {
-    if (nums[r] !== nums[r - 1]) {
+// Goal: Practice the most direct form of the scanner + stamper.
+//
+// The scanner (r) reads every slot. The stamper (w) only advances when
+// the scanner finds a positive value — it writes the keeper into slot w,
+// then bumps w forward by one. Everything else is skipped off the belt.
+// =============================================================================
+function keepPositives(nums: number[]): number {
+  let w = 0;
+  for (let r = 0; r < nums.length; r++) {
+    if (nums[r] > 0) {
       nums[w] = nums[r];
       w++;
     }
@@ -13,12 +18,12 @@ function removeDuplicates(nums: number[]): number {
   return w;
 }
 
-test('empty array',     () => removeDuplicates([]),              0);
-test('no duplicates',   () => removeDuplicates([1, 2, 3]),       3);
-test('all duplicates',  () => removeDuplicates([2, 2, 2, 2]),    1);
-test('two groups',      () => removeDuplicates([1, 1, 2]),       2);
-test('longer mixed',    () => removeDuplicates([0,0,1,1,1,2,2]), 3);
-test('single element',  () => removeDuplicates([7]),             1);
+test('mixed signs',     () => keepPositives([-1, 3, 0, 2, -4, 5]),  3);
+test('none positive',   () => keepPositives([0, -1, -2]),            0);
+test('all positive',    () => keepPositives([1, 2, 3]),              3);
+test('empty belt',      () => keepPositives([]),                     0);
+test('single positive', () => keepPositives([4]),                    1);
+test('single zero',     () => keepPositives([0]),                    0);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function test(desc: string, fn: () => unknown, expected: unknown): void {

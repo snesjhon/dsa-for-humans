@@ -1,8 +1,11 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 2: Is Palindrome
+// Arrays & Strings — Level 2, Exercise 2: Do the Inspectors Agree?
 // =============================================================================
-// Goal: Use two converging pointers to check symmetry.
+// Goal: Use the two converging inspectors to check symmetry.
 //
+// The left inspector starts at the front; the right inspector starts at the end.
+// At each step they compare what they're seeing. If they ever disagree — not
+// a palindrome. If they meet in the middle without disagreeing — it is one.
 // Return true if the string reads the same forwards and backwards.
 // Assume the string contains only lowercase letters and/or digits.
 //

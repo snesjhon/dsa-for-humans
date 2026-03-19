@@ -1,5 +1,5 @@
 // =============================================================================
-// Arrays & Strings — Level 2, Exercise 2: Is Palindrome — SOLUTION
+// Arrays & Strings — Level 2, Exercise 2: Do the Inspectors Agree? — SOLUTION
 // =============================================================================
 function isPalindrome(s: string): boolean {
   let L = 0, R = s.length - 1;

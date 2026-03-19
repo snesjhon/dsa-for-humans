@@ -1,12 +1,14 @@
 // =============================================================================
-// Arrays & Strings — Level 3, Exercise 3: Product Except Self
+// Arrays & Strings — Level 3, Exercise 3: Both Messengers, Combined
 // =============================================================================
-// Goal: Use prefix and suffix products to build the output without division.
+// Goal: Send both messengers and combine their notes at each slot.
 //
-// Return an array output where output[i] is the product of every element
-// in nums except nums[i]. You may not use division.
-// Hint: compute a prefix product array and a suffix product array, then
-// combine them.
+// The left messenger records the product of everything to the LEFT of each slot.
+// The right messenger records the product of everything to the RIGHT.
+// Each slot's answer = left messenger's note × right messenger's note.
+// You may not use division.
+//
+// Return an array where output[i] is the product of every element except nums[i].
 //
 // Example:
 //   productExceptSelf([1, 2, 3, 4]) → [24, 12, 8, 6]

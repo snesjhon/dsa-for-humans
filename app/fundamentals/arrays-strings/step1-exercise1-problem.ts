@@ -1,27 +1,30 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 1: Remove Duplicates
+// Arrays & Strings — Level 1, Exercise 1: Stamp the Keepers
 // =============================================================================
-// Goal: Use the write cursor to compact a sorted array in-place.
+// Goal: Practice the most direct form of the scanner + stamper.
 //
-// Remove duplicates from a sorted array in-place.
-// The array is sorted, so duplicates are always adjacent.
-// Keep the first occurrence of each value; overwrite the rest.
-// Return the number of unique elements.
+// The conveyor belt carries integers — some positive, some zero, some negative.
+// Keep only the positive values (> 0) at the front, in their original order.
+// Everything else is discarded off the belt.
+// Return the count of items stamped.
+//
+// The scanner reads every slot without skipping.
+// The stamper only advances when the scanner finds a positive value.
 //
 // Example:
-//   removeDuplicates([1, 1, 2])          → 2   (array becomes [1, 2, ...])
-//   removeDuplicates([0, 0, 1, 1, 1, 2]) → 3   (array becomes [0, 1, 2, ...])
+//   keepPositives([-1, 3, 0, 2, -4, 5]) → 3   (belt becomes [3, 2, 5, ...])
+//   keepPositives([0, -1, -2])           → 0   (nothing to stamp)
 // =============================================================================
-function removeDuplicates(nums: number[]): number {
+function keepPositives(nums: number[]): number {
   throw new Error('not implemented');
 }
 
-test('empty array',     () => removeDuplicates([]),              0);
-test('no duplicates',   () => removeDuplicates([1, 2, 3]),       3);
-test('all duplicates',  () => removeDuplicates([2, 2, 2, 2]),    1);
-test('two groups',      () => removeDuplicates([1, 1, 2]),       2);
-test('longer mixed',    () => removeDuplicates([0,0,1,1,1,2,2]), 3);
-test('single element',  () => removeDuplicates([7]),             1);
+test('mixed signs',     () => keepPositives([-1, 3, 0, 2, -4, 5]),  3);
+test('none positive',   () => keepPositives([0, -1, -2]),            0);
+test('all positive',    () => keepPositives([1, 2, 3]),              3);
+test('empty belt',      () => keepPositives([]),                     0);
+test('single positive', () => keepPositives([4]),                    1);
+test('single zero',     () => keepPositives([0]),                    0);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function test(desc: string, fn: () => unknown, expected: unknown): void {
