@@ -1,398 +1,426 @@
-# Arrays & Strings - Fundamentals
-
 ## 1. Overview
 
-Arrays and strings are the most fundamental data structures in programming — a contiguous sequence of elements accessed by numeric index. Nearly every other algorithm touches them, which is exactly why they come first: comfort here means you can focus on the technique, not the data structure.
+Arrays and strings are the bedrock of every coding interview. Nearly every problem — even trees, graphs, and dynamic programming — eventually reduces to operating on a sequence of values by index.
 
-You already know how to loop over an array. This guide deepens that: you'll learn how to use indexes as tools — not just counters — to manipulate data in place, read from both ends simultaneously, and make multiple passes when one isn't enough.
+What makes array problems deceptively hard is that the most obvious approach (nested loops, building a new array) is rarely what's expected. The goal is almost always to do it *in-place* in a single pass with O(1) extra space.
 
-The three building blocks progress from single-index iteration → two-index write cursor → two-index convergence. Each level unlocks a new class of problems.
+This guide covers the three index-based tools that unlock all of that: **the write cursor**, **two converging pointers**, and **prefix/suffix passes**. By the end, you'll recognize which tool a problem is asking for before you write a single line of code.
 
 ---
 
 ## 2. Core Concept & Mental Model
 
-### The Tape Analogy
+### The Assembly Line Analogy
 
-Think of an array as a **cassette tape**:
-- **Cells** = frames on the tape — each holds one value, has one address (index)
-- **Index** = the read/write head position — you control where it points
-- **In-place** = recording over existing frames without buying a new tape
-- **String** = a read-only tape — you can read any frame, but you can't erase or overwrite (strings are immutable; modifications require creating a new tape)
+Picture a factory assembly line. A **conveyor belt** carries items from left to right — that's your array. There are two key roles:
 
-Unlike a linked list, where you follow chains of pointers, any cell on the tape is reachable in O(1) — you just say "go to position 7." This random access is what makes index manipulation so powerful.
+- A **scanner** (read pointer) moves steadily from left to right, inspecting every item without exception.
+- A **stamper** (write cursor) sits near the front and only advances when it places a valid item.
 
-### Concept Map
+When you need to compact or filter, the scanner looks at everything, but the stamper only places keepers. The gap between them represents eliminated slots.
 
-```mermaid
-graph TD
-    A[Array] --> B[Index Access]
-    A --> C[Iteration]
-    A --> D[Mutation]
-    B --> B1[O1 read and write]
-    B --> B2[0-based indexing]
-    C --> C1[Forward loop]
-    C --> C2[Backward loop]
-    C --> C3[Two pointers]
-    D --> D1[In-place via write cursor]
-    D --> D2[Swap]
-    S[String] --> E[Immutable]
-    S --> F[Index Access same as array]
-    E --> E1[Split to array to mutate]
-    E --> E2[Join back to string]
-    A --> G[Two-pass patterns]
-    G --> G1[Prefix scan]
-    G --> G2[Suffix scan]
-    G --> G3[Combine passes]
-```
+For problems that check symmetry or search a sorted sequence, you deploy **two inspectors**: one starts at the left end, one at the right, and they walk toward each other. Each step eliminates a position from further consideration — which is what makes this O(n) instead of O(n²).
 
-### Key Operations
+For problems where each position needs context from both sides — "what's the product of everything *except* this element?" — you send a **left messenger** walking forward collecting prefix information, then a **right messenger** walking backward collecting suffix information. Each position gets its answer from what both messengers gathered on their respective sides.
 
-| Operation           | Array  | String (JS/TS)     |
-| ------------------- | ------ | ------------------ |
-| Read at index       | O(1)   | O(1)               |
-| Write at index      | O(1)   | ❌ immutable        |
-| Push / pop          | O(1)   | O(n) — new string  |
-| Reverse in-place    | O(n)   | O(n) — needs split |
-| Contains (linear)   | O(n)   | O(n)               |
-| Slice               | O(k)   | O(k)               |
+### Understanding the Analogy
+
+#### The Setup
+
+The conveyor belt stretches from index 0 to index n-1. Each slot holds one item — a number or a character. You cannot add more slots or create a second belt (no extra space). Your only tools are: where you're reading from, where you're writing to, and what you've accumulated so far.
+
+#### The Three Roles on the Line
+
+The **scanner and stamper** (write cursor) work as a pair on the same belt moving forward. The scanner looks at every item. The stamper only places keepers. The gap between them grows as more items are eliminated — that gap is the "graveyard" of discarded slots, which you can safely overwrite.
+
+The **two converging inspectors** start at opposite ends and walk toward each other. They exploit the structure of the belt — sorted order, or the symmetry property of palindromes — to eliminate one slot per step. No item they've already judged needs to be revisited.
+
+The **two messengers** make separate trips. The first walks left-to-right, recording what it accumulates before each slot. The second walks right-to-left, recording what it accumulates after each slot. Each slot collects both messengers' notes and combines them — this is how you answer "what about everything *except* me?" without rescanning.
+
+#### Why These Approaches
+
+All three exploit the fact that arrays are indexed. You never need to look at an element twice if you move your pointers correctly. The write cursor's output is always a *prefix* of the input — which means it fits in-place. Converging pointers eliminate half the problem each time they both move. Two-pass prefix/suffix flips an O(n²) inside-out look into two forward scans.
+
+#### A Simple Example
+
+The line is `[3, 2, 2, 1, 2, 4]` and you want to remove all `2`s. The scanner walks forward. Each time it finds a non-2, the stamper places it and advances one slot. When the scanner reaches the end, the stamper has only advanced three times — slots 0, 1, 2 now hold `[3, 1, 4]`. The rest of the belt doesn't matter.
+
+Now you understand the tools. Let's build them step by step.
+
+---
+
+### How I Think Through This
+
+When I see an array or string problem, the first question I ask is: *am I being asked to modify the array in-place, or am I computing something about it?* If in-place, I reach for the write cursor — `r` scans everything, `w` only advances on keepers, and `w` at the end is both the count and the boundary. If the array is sorted or I need to check symmetry end-to-end, two converging pointers from L=0 and R=n-1 let me eliminate one position per step without any extra space. If each position needs to know about everything to its left *and* its right simultaneously, I do a forward pass to build prefix values into the output array, then a backward pass to multiply in suffix values. The key signal for the last pattern is "except self" or "combining left and right context."
+
+Take `[1, 2, 3, 4]`, find product except self: I can't divide (what if there's a zero?), so I send both messengers. Forward: result becomes `[1, 1, 2, 6]` — each slot now holds the product of everything to its left. Backward: I multiply in suffix values, right-to-left, `suffix` starts at 1. After position 3: `6 * 1 = 6`, suffix becomes 4. After position 2: `2 * 4 = 8`, suffix becomes 12. After position 1: `1 * 12 = 12`, suffix becomes 24. After position 0: `1 * 24 = 24`. Result: `[24, 12, 8, 6]` ✓
 
 ---
 
 ## 3. Building Blocks — Progressive Learning
 
-### Level 1: Index Manipulation & Linear Iteration
+### Level 1: The Write Cursor
 
 **Why this level matters**
-Every array algorithm is built on one primitive: *look at a cell, decide what to do, move the head.* Before you can write a two-pointer solution or a prefix-product pass, you need fluency with the basic loop — controlling exactly which index you visit and in what order.
+
+The most common array constraint is "do it in-place with O(1) extra space." That means you cannot build a new filtered array — you must rewrite the original. The write cursor is the pattern that makes this possible. Without it, you instinctively reach for a second array or a nested loop. With it, nearly any filter-and-compact problem becomes a single forward pass.
 
 **How to think about it**
-The default `for...of` loop hides the index. That's fine for printing. It's not enough when the *position* matters — when you need to know you're at the last element, or you need to read forward and write to a different position, or you need to walk backward.
 
-Think of iteration as *moving the tape head manually*. You control the starting position, the direction, and the stopping condition. A `for` loop with an explicit index variable is just that: you're the operator deciding where the head points each step.
+You maintain two positions in the same array: `r` (the reader, scanning every element) and `w` (the writer, tracking where the next valid element should land). The reader always advances. The writer only advances when it places something.
 
-Two directions matter immediately: **forward** (left → right, index 0 to n-1) and **backward** (right → left, index n-1 to 0). Reversing an array is just: simultaneously walk one head forward and one head backward, swapping as you go. The trick is stopping in the middle — once the heads cross, every pair has already been swapped.
+Think of `w` as pointing to the next blank slot in your output. When the scanner finds a keeper, it stamps it into slot `w` and bumps `w` forward by one. Non-keepers are skipped — the reader moves on but the writer stays put, ready to overwrite that slot the next time a keeper arrives.
+
+When the reader finishes, the first `w` positions of the array hold exactly the valid elements. Everything after index `w` is irrelevant — the problem only cares about the first `w` positions.
 
 **Walking through it**
 
-Reverse `[1, 2, 3, 4, 5]` in place. Use a left pointer starting at 0 and a right pointer starting at 4.
+Remove all `2`s from `[3, 2, 2, 1, 2, 4]`. Expected: first 3 elements are `[3, 1, 4]`, return length `3`.
 
 ```
-Initial:  [1, 2, 3, 4, 5]   left=0, right=4
-Swap 1↔5: [5, 2, 3, 4, 1]   left=1, right=3
-Swap 2↔4: [5, 4, 3, 2, 1]   left=2, right=2
-left >= right → stop
-```
+Start: r=0, w=0  →  [3, 2, 2, 1, 2, 4]
 
-Three swaps for five elements. If you run one more step, you'd swap index 2 with itself — no harm but unnecessary. The condition `left < right` stops exactly in time.
+r=0: nums[0]=3 (keep) → stamp into w=0, w becomes 1
+     [3, 2, 2, 1, 2, 4]   r=1, w=1
+
+r=1: nums[1]=2 (skip)
+     [3, 2, 2, 1, 2, 4]   r=2, w=1
+
+r=2: nums[2]=2 (skip)
+     [3, 2, 2, 1, 2, 4]   r=3, w=1
+
+r=3: nums[3]=1 (keep) → stamp into w=1, w becomes 2
+     [3, 1, 2, 1, 2, 4]   r=4, w=2
+
+r=4: nums[4]=2 (skip)
+     [3, 1, 2, 1, 2, 4]   r=5, w=2
+
+r=5: nums[5]=4 (keep) → stamp into w=2, w becomes 3
+     [3, 1, 4, 1, 2, 4]   r=6, w=3
+
+Done: return w=3 → nums[0..2] = [3, 1, 4] ✓
+```
 
 **The one thing to get right**
-The loop condition is `left < right`, not `left <= right`. When `left === right` on an odd-length array, that's the middle element — it doesn't need swapping. If you use `<=`, the middle element swaps with itself (harmless but wasteful); on even-length arrays, it'll swap elements that were already in their final positions.
+
+`w` is simultaneously "the index to write to" and "the count of valid elements placed so far." If you increment `w` before writing, you skip slot 0 and your count is off by one. If you write without incrementing, you overwrite the same slot forever. Always: write first, then increment.
+
+**Code**
 
 ```typescript
-function reverse(arr: number[]): number[] {
-  let left = 0;
-  let right = arr.length - 1;
-  while (left < right) {
-    [arr[left], arr[right]] = [arr[right], arr[left]];
-    left++;
-    right--;
-  }
-  return arr;
-}
-```
-
-> **Mental anchor**: "Two heads on the same tape — move them toward each other, stop before they cross."
-
-**→ Bridge to Level 2**: Swapping works when every element stays in the array. But many problems ask you to *remove* elements in place — compact the array by dropping some values. A swap-based approach would leave gaps. You need a different tool: a write cursor.
-
----
-
-### Level 2: The Write Cursor — In-Place Compaction
-
-**Why this level matters**
-Problems like "remove duplicates" or "remove element" ask you to shrink an array without creating a new one. You can't delete cells in an array — you can only overwrite them. The write cursor pattern is how you do it: one pointer reads every element, another pointer tracks the "next available slot" to write into.
-
-**How to think about it**
-Imagine the tape again, but now you have two heads: a **read head** that scans forward through every frame, and a **write head** that only advances when it places a keeper. The read head sees everything. The write head is picky — it moves forward only when it writes a value that belongs.
-
-At the end, the first `writeIdx` positions of the array contain your answer. The content beyond `writeIdx` is irrelevant — the caller only looks at the first `writeIdx` elements.
-
-This pattern appears in three guises in Step 1:
-- Remove all occurrences of a value (LeetCode 27 — Remove Element)
-- Remove duplicates from a sorted array (LeetCode 26 — the sorted property lets you compare with the previous written value)
-- Merge two sorted arrays from the back (LeetCode 88 — runs the heads right-to-left)
-
-**Walking through it**
-
-Remove duplicates from `[1, 1, 2, 3, 3]`. After each step, `k` is the write head (next available slot):
-
-```
-arr = [1, 1, 2, 3, 3]   k=1 (k starts at 1: first element always kept)
-read=1: arr[1]=1, arr[k-1]=1 — duplicate, skip
-read=2: arr[2]=2, arr[k-1]=1 — new value, write arr[k]=2, k=2
-read=3: arr[3]=3, arr[k-1]=2 — new value, write arr[k]=3, k=3
-read=4: arr[4]=3, arr[k-1]=3 — duplicate, skip
-```
-
-Final: `arr = [1, 2, 3, ...]`, return `k=3`. First 3 elements are the answer.
-
-**The one thing to get right**
-For sorted deduplication, compare `arr[read]` with `arr[k-1]` — the last value you *wrote* — not with `arr[read-1]`. The read head may have skipped several duplicates since the last write; comparing with the read head's previous position would miss cases.
-
-```typescript
-function removeDuplicates(nums: number[]): number {
-  let k = 1;
-  for (let read = 1; read < nums.length; read++) {
-    if (nums[read] !== nums[k - 1]) {
-      nums[k] = nums[read];
-      k++;
+function removeElement(nums: number[], val: number): number {
+  let w = 0;
+  for (let r = 0; r < nums.length; r++) {
+    if (nums[r] !== val) {
+      nums[w] = nums[r];
+      w++;
     }
   }
-  return k;
+  return w;
 }
 ```
 
-> **Mental anchor**: "Read head scans everything. Write head only moves when it keeps something."
+:::stackblitz{step=1 total=3 exercises="step1-exercise1-problem.ts,step1-exercise2-problem.ts,step1-exercise3-problem.ts" solutions="step1-exercise1-solution.ts,step1-exercise2-solution.ts,step1-exercise3-solution.ts"}
 
-**→ Bridge to Level 3**: The write cursor moves in one direction. But some problems need you to check something at both ends simultaneously — like verifying a palindrome, or merging from the back. Level 3 brings both pointers together, converging from opposite ends.
+> **Mental anchor**: The write cursor says "I only advance when I place something real." The read pointer says "I look at everything." The gap between them is the graveyard.
+
+**→ Bridge to Level 2**
+
+The write cursor moves in one direction with one active pointer. But many problems need to reason about both ends of the array simultaneously — that's when two converging pointers replace the single read pointer.
 
 ---
 
-### Level 3: Two-Pointer Convergence — Reading from Both Ends
+### Level 2: Two Converging Pointers
 
 **Why this level matters**
-Some array and string properties involve comparing or combining the front and back — a palindrome compares the first character to the last, the second to the second-last, and so on. A single forward pass can't do this; you'd have to index from both ends at once. The converging two-pointer technique is the tool.
+
+Problems involving symmetry ("is this a palindrome?") or a sorted structure ("find two numbers that sum to target") appear impossible to solve in less than O(n²) until you notice that starting from both ends and moving inward eliminates one element per step. That insight drops the work to O(n) — without any extra memory.
 
 **How to think about it**
-You place one pointer at the leftmost position and another at the rightmost, then walk them toward each other. At each step, you examine what both pointers see and decide: are they a valid pair? If not, you've found a mismatch and can stop early. If they match, advance both inward.
 
-For palindrome checking on a string: left starts at 0, right starts at `s.length - 1`. Valid Palindrome (LeetCode 125) adds one twist — skip non-alphanumeric characters. So the pointers don't advance by 1 every step; they advance until they land on a valid character.
+Place `L` at index 0 and `R` at index `n-1`. At each step, look at the pair `(arr[L], arr[R])`. Based on what you find, advance one (or both) pointers inward. The critical question is: which pointer moves, and when?
+
+- For a **palindrome check**: if `s[L] !== s[R]` you already know it's not a palindrome and can stop. If they match, both pointers move inward. Either way, you make progress.
+- For a **sorted two-sum**: if the sum of the pair is too small, moving `L` right increases the sum (because the array is sorted and larger values are to the right). If the sum is too large, move `R` left. If it matches, you're done.
+
+Each move **eliminates an entire position** from consideration. After at most `n` total moves, the two pointers meet — the loop ends.
 
 **Walking through it**
 
-Check if `"A man, a plan, a canal: Panama"` is a palindrome. Lowercase and skip non-alphanum:
+Check if `"racecar"` is a palindrome.
 
 ```
-Cleaned view: "amanaplanacanalpanama"
-left=0  ('a'),  right=19 ('a') — match, advance
-left=1  ('m'),  right=18 ('m') — match, advance
-left=2  ('a'),  right=17 ('a') — match, advance
-left=3  ('n'),  right=16 ('n') — match, advance
-...
-left=9  ('a'),  right=10 ('a') — match, advance
-left >= right → done, it's a palindrome
+s = ['r','a','c','e','c','a','r']
+     L=0                   R=6
+
+Step 1: s[0]='r' === s[6]='r' → match, move both inward
+     L=1               R=5
+
+Step 2: s[1]='a' === s[5]='a' → match, move both inward
+     L=2           R=4
+
+Step 3: s[2]='c' === s[4]='c' → match, move both inward
+     L=3       R=3
+
+Step 4: L >= R → stop. Every pair matched.
+
+Result: palindrome ✓
 ```
 
-The actual code skips non-alphanum by advancing the pointer in a small inner loop before comparing.
+Check if `"hello"` is a palindrome.
+
+```
+s = ['h','e','l','l','o']
+     L=0               R=4
+
+Step 1: s[0]='h' !== s[4]='o' → mismatch, return false immediately
+
+Result: not a palindrome ✓
+```
 
 **The one thing to get right**
-Normalize *before* comparing. If you compare raw characters from the original string and some are uppercase or punctuation, your equality check fails on valid palindromes. Convert to lowercase and check `isAlphanumeric` at the same time — do it inside the same while loop before the comparison, not in a separate pass.
+
+The loop condition is `L < R`, not `L <= R`. When `L === R`, you are looking at the middle character of an odd-length string. It always matches itself — there is nothing to check. Checking it with `L <= R` is harmless but if your logic tries to advance past a single-character middle it can skip elements.
+
+**Code**
 
 ```typescript
 function isPalindrome(s: string): boolean {
-  let left = 0;
-  let right = s.length - 1;
-
-  while (left < right) {
-    while (left < right && !isAlphanumeric(s[left])) left++;
-    while (left < right && !isAlphanumeric(s[right])) right--;
-
-    if (s[left].toLowerCase() !== s[right].toLowerCase()) return false;
-    left++;
-    right--;
+  let L = 0, R = s.length - 1;
+  while (L < R) {
+    if (s[L] !== s[R]) return false;
+    L++;
+    R--;
   }
   return true;
 }
-
-function isAlphanumeric(c: string): boolean {
-  return /[a-zA-Z0-9]/.test(c);
-}
 ```
 
-> **Mental anchor**: "Two heads walking toward each other — stop when they meet or find a mismatch."
+:::stackblitz{step=2 total=3 exercises="step2-exercise1-problem.ts,step2-exercise2-problem.ts,step2-exercise3-problem.ts" solutions="step2-exercise1-solution.ts,step2-exercise2-solution.ts,step2-exercise3-solution.ts"}
+
+> **Mental anchor**: Two pointers converge by eliminating one position per step. They always meet in O(n) — no matter how the array is structured.
+
+**→ Bridge to Level 3**
+
+Both the write cursor and two pointers work with information available *at the current position*. But some problems need context about everything to the left and everything to the right of each position simultaneously — and that context can't be gathered in a single pass. Prefix and suffix passes solve this.
 
 ---
 
-## 4. Key Patterns
+### Level 3: Prefix & Suffix Passes
 
-### Pattern: Two-Pass Prefix & Suffix Products
+**Why this level matters**
 
-**When to use**: The problem asks for a result at each index that depends on *everything except* that index — and division is forbidden or the input contains zeros. Keywords: "product of array except self", "running total excluding current", "left product × right product."
+Some problems ask: "at each position, combine everything before it with everything after it." The naive solution is O(n²) — scan left and right for each element. Prefix and suffix passes reduce this to O(n): compute the left side in one forward pass, the right side in one backward pass. Each position gets its answer by combining the two.
 
 **How to think about it**
-One pass isn't enough because at index `i`, you need values from both sides — the product of everything to the left and everything to the right. A single loop can accumulate in only one direction at a time. The insight: do it in two passes. First pass (left → right) fills each slot with the running product of everything to its left. Second pass (right → left) multiplies in the running product of everything to its right. The two passes together give you the product of everything except `nums[i]`.
 
-No division needed. The two independent products are computed, stored, and multiplied — no element is ever divided back out.
+Send two messengers across the array:
+
+1. **Left messenger** walks left-to-right. Before reaching position `i`, it has accumulated information from all elements to the left. It records that information and moves on.
+2. **Right messenger** walks right-to-left. Before reaching position `i`, it has accumulated information from all elements to the right. It multiplies that in.
+
+Each position ends up with the combined result from both messengers — without ever re-scanning.
+
+The canonical example is "product of array except self." You can't divide the total product by `nums[i]` because it might be zero. Instead:
+
+- Forward pass: `result[i]` = product of all elements *before* position `i`. Start with `prefix = 1`.
+- Backward pass: multiply `result[i]` by the product of all elements *after* position `i`. Maintain a running `suffix` variable as you scan right-to-left.
+
+No extra array needed — the output array accumulates both passes in-place.
+
+**Walking through it**
+
+`nums = [1, 2, 3, 4]`. Expected output: `[24, 12, 8, 6]`.
+
+```
+Forward pass (prefix product = everything to the LEFT of i):
+
+  i=0: result[0] = prefix = 1          prefix becomes 1 * 1 = 1
+  i=1: result[1] = prefix = 1          prefix becomes 1 * 2 = 2
+  i=2: result[2] = prefix = 2          prefix becomes 2 * 3 = 6
+  i=3: result[3] = prefix = 6          prefix becomes 6 * 4 = 24
+
+  result = [1, 1, 2, 6]
+
+Backward pass (multiply by suffix = everything to the RIGHT of i):
+
+  i=3: result[3] *= suffix=1 → 6*1=6   suffix becomes 1 * 4 = 4
+  i=2: result[2] *= suffix=4 → 2*4=8   suffix becomes 4 * 3 = 12
+  i=1: result[1] *= suffix=12 → 1*12=12 suffix becomes 12 * 2 = 24
+  i=0: result[0] *= suffix=24 → 1*24=24 suffix becomes 24 * 1 = 24
+
+  result = [24, 12, 8, 6] ✓
+```
+
+**The one thing to get right**
+
+`prefix` at position `i` covers elements *strictly before* `i`, not including `i` itself. So `prefix` starts at `1` (the multiplicative identity), and you update it *after* recording `result[i]`. Getting this order reversed includes `nums[i]` in its own product — corrupting every answer.
+
+**Code**
 
 ```typescript
 function productExceptSelf(nums: number[]): number[] {
   const n = nums.length;
   const result = new Array(n).fill(1);
 
-  // First pass: result[i] = product of all elements to the LEFT of i
-  let leftProduct = 1;
+  let prefix = 1;
   for (let i = 0; i < n; i++) {
-    result[i] = leftProduct;
-    leftProduct *= nums[i];
+    result[i] = prefix;
+    prefix *= nums[i];
   }
 
-  // Second pass: multiply in product of all elements to the RIGHT of i
-  let rightProduct = 1;
+  let suffix = 1;
   for (let i = n - 1; i >= 0; i--) {
-    result[i] *= rightProduct;
-    rightProduct *= nums[i];
+    result[i] *= suffix;
+    suffix *= nums[i];
   }
 
   return result;
 }
 ```
 
-**Complexity**: Time O(n), Space O(1) extra (output array doesn't count).
+:::stackblitz{step=3 total=3 exercises="step3-exercise1-problem.ts,step3-exercise2-problem.ts,step3-exercise3-problem.ts" solutions="step3-exercise1-solution.ts,step3-exercise2-solution.ts,step3-exercise3-solution.ts"}
 
-> See the full mental model: [238. Product of Array Except Self](../problems/238-product-of-array-except-self/mental-model.md)
+> **Mental anchor**: Prefix tells each position what came before. Suffix tells it what comes after. Together they answer in two O(n) passes what a nested loop would answer in O(n²).
 
 ---
 
-### Pattern: Length-Prefixed Encoding
+## 4. Key Patterns
 
-**When to use**: You need to serialize a list of strings into a single string and decode it back — losslessly, even if the strings contain any characters including the delimiter. Keywords: "encode", "decode", "serialize list of strings", "round-trip."
+### Pattern: In-Place Compaction with Write Cursor
 
-**How to think about it**
-The naive approach uses a delimiter like `","`. It fails the moment a string *contains* that delimiter. The fix: store the length of each string before the string itself. When decoding, read the length first, then read exactly that many characters — no ambiguity about where one string ends and the next begins.
+**When to use**: the problem says "in-place," "O(1) extra space," "remove elements," or "compress array." You're asked to modify the array and return the new length (not a new array).
 
-The format: `"4#word3#the5#hello"` — each chunk is `{length}#{string}`. The decoder scans for `#`, reads the number before it, then slices exactly that many characters after it.
+**How to think about it**: the output is a *prefix* of the input array. You're deciding which elements belong in that prefix. The write cursor marks the boundary between "placed" and "not yet placed."
+
+**Code**
 
 ```typescript
-function encode(strs: string[]): string {
-  return strs.map(s => `${s.length}#${s}`).join('');
-}
-
-function decode(s: string): string[] {
-  const result: string[] = [];
-  let i = 0;
-  while (i < s.length) {
-    const j = s.indexOf('#', i);
-    const len = parseInt(s.slice(i, j));
-    result.push(s.slice(j + 1, j + 1 + len));
-    i = j + 1 + len;
+function removeDuplicates(nums: number[]): number {
+  let w = 1;
+  for (let r = 1; r < nums.length; r++) {
+    if (nums[r] !== nums[r - 1]) {
+      nums[w] = nums[r];
+      w++;
+    }
   }
-  return result;
+  return nums.length === 0 ? 0 : w;
 }
 ```
 
-**Complexity**: Time O(n) encode and decode, Space O(n).
+**Complexity**: Time O(n), Space O(1)
 
-> See the full mental model: [271. Encode and Decode Strings](../problems/271-encode-and-decode-strings/mental-model.md)
+---
+
+### Pattern: Prefix Sum for Range Queries
+
+**When to use**: the problem involves summing or querying subarrays repeatedly, or asks for counts/sums over ranges. The key signal is "sum of elements between index i and j."
+
+**How to think about it**: compute `prefix[i]` = sum of `nums[0..i-1]` once up front. Then any range sum `[L, R]` = `prefix[R+1] - prefix[L]` in O(1). The upfront O(n) cost pays off when you have many queries.
+
+**Code**
+
+```typescript
+function buildPrefix(nums: number[]): number[] {
+  const prefix = new Array(nums.length + 1).fill(0);
+  for (let i = 0; i < nums.length; i++) {
+    prefix[i + 1] = prefix[i] + nums[i];
+  }
+  return prefix;
+}
+
+function rangeSum(prefix: number[], L: number, R: number): number {
+  return prefix[R + 1] - prefix[L];
+}
+```
+
+**Complexity**: Build O(n), Query O(1), Space O(n)
 
 ---
 
 ## 5. Decision Framework
 
+### Concept Map
+
 ```mermaid
 graph TD
-    Start[Array or String Problem] --> Q1{Need result at every index?}
-    Q1 -- Yes --> Q2{Depends on elements both sides?}
-    Q2 -- Yes --> Prefix[Two-pass prefix and suffix]
-    Q2 -- No --> Single[Single forward pass]
-    Q1 -- No --> Q3{Modify array in place?}
-    Q3 -- Yes --> Q4{Keep some elements, drop others?}
-    Q4 -- Yes --> WriteCursor[Write cursor pattern]
-    Q4 -- No --> Q5{Swap elements?}
-    Q5 -- Yes --> Swap[Reverse or partition via swap]
-    Q3 -- No --> Q6{Compare front and back?}
-    Q6 -- Yes --> Converge[Converging two pointers]
-    Q6 -- No --> Forward[Single forward scan]
+    AS[Arrays and Strings] --> IP[In-Place Manipulation]
+    AS --> Idx[Index Navigation]
+    AS --> Str[Strings as Char Arrays]
+    IP --> WC[Write Cursor]
+    IP --> TP[Two Converging Pointers]
+    IP --> PS[Prefix and Suffix Passes]
+    WC --> WC1[Read pointer sees everything]
+    WC --> WC2[Write cursor advances on keepers only]
+    TP --> TP1[L starts at 0, R starts at end]
+    TP --> TP2[One pointer moves per step — O of n total]
+    PS --> PS1[Forward pass collects left context]
+    PS --> PS2[Backward pass collects right context]
+    Str --> S1[Indexed char sequence]
+    Str --> S2[Two pointers check symmetry]
 ```
 
-**Recognition signals**:
+### Key Operations
 
-| Keywords in problem | Technique |
-| ------------------- | --------- |
-| "reverse in place", "rotate" | Converging two pointers with swap |
-| "remove duplicates", "remove element", "compact" | Write cursor (read + write pointers) |
-| "palindrome", "valid palindrome", "symmetric" | Converging two pointers with char comparison |
-| "product except self", "running totals excluding current" | Two-pass prefix + suffix |
-| "encode/decode strings", "serialize list" | Length-prefixed encoding |
-| "merge sorted arrays" | Write cursor from the back (LeetCode 88) |
+| Operation | Time | Space | Notes |
+|-----------|------|-------|-------|
+| Access by index | O(1) | — | The core advantage of arrays |
+| Write cursor compact | O(n) | O(1) | One read pass, one write head |
+| Two-pointer scan | O(n) | O(1) | Each pointer moves at most n steps total |
+| Build prefix array | O(n) | O(n) | Separate array stores cumulative values |
+| Prefix + suffix in-place | O(n) | O(1) extra | Two passes, reuse output array |
 
-**When NOT to use array two-pointers**:
-- When you need O(1) lookup by value → use a hash map instead
-- When the window of interest varies in size → sliding window is clearer
-- When the array is unsorted and you need to find pairs with a specific sum → sort first, or use a hash map
+### When to use which
+
+```mermaid
+graph TD
+    Q[Array or String problem] --> Q1{Filter or compact in-place?}
+    Q1 -->|Yes| WC[Write Cursor]
+    Q1 -->|No| Q2{Sorted array or check symmetry?}
+    Q2 -->|Yes| TP[Two Converging Pointers]
+    Q2 -->|No| Q3{Each position needs both-sides context?}
+    Q3 -->|Yes| PS[Prefix and Suffix Passes]
+    Q3 -->|No| Q4{Range sum or running total queries?}
+    Q4 -->|Yes| PR[Prefix Sum Array]
+    Q4 -->|No| NA[Consider Sliding Window or Hash Map]
+```
+
+**Recognition signals**
+
+| Problem keywords | Technique |
+|------------------|-----------|
+| "in-place", "O(1) space", "remove/filter elements" | Write cursor |
+| "palindrome", "two sum in sorted array", "reverse" | Two converging pointers |
+| "product/sum except self", "context from both sides" | Prefix + suffix passes |
+| "subarray sum", "range query", "count subarrays with sum k" | Prefix sum + hash map |
+
+**When NOT to use two pointers from both ends**: when the array is unsorted and you need to find a pair sum. Two pointers only work because a sorted array guarantees that moving `L` right increases the sum and moving `R` left decreases it. Without that guarantee, use a hash set instead.
 
 ---
 
 ## 6. Common Gotchas & Edge Cases
 
-**Typical Mistakes**:
+**"I'll write first, then increment `w`" — except you incremented first.**
+It's easy to write `w++; nums[w] = nums[r]` instead of `nums[w] = nums[r]; w++`. The first version skips slot 0 and produces an off-by-one count. Always write to `w` *before* advancing it.
 
-1. **Off-by-one in loop bounds** — `i < arr.length` vs `i <= arr.length - 1` are equivalent, but mixing `<` and `<=` casually leads to skipping the last element or reading out of bounds. Pick one style and apply it consistently. The converging pointer condition is always `left < right`, never `<=`.
+**Loop condition `L <= R` for two pointers.**
+When `L === R`, you're examining the middle of an odd-length array. The element always matches itself. If your logic is `if s[L] !== s[R] return false`, this is harmless. But if you decrement `R` and increment `L` past each other, you'll miss or double-count. Use `L < R` and stop cleanly.
 
-2. **Mutating a string directly** — In JavaScript/TypeScript, strings are immutable. `s[0] = 'X'` silently does nothing. If a problem asks you to "reverse a string in place," the input is `string[]`, not `string`. Whenever you need to modify characters, convert to an array first with `s.split('')` and join back with `.join('')` at the end.
+**Prefix[i] includes `nums[i]` — off by one.**
+If `prefix[i]` = sum of `nums[0..i]` (including `i`), then `prefix[R] - prefix[L]` gives the sum of `nums[L+1..R]`, not `nums[L..R]`. The standard convention is `prefix[i]` = sum of `nums[0..i-1]` so that `prefix[R+1] - prefix[L]` = sum of `nums[L..R]`. Decide your convention up front and be consistent.
 
-3. **Write cursor: comparing with the wrong neighbor** — In sorted deduplication, compare `nums[read]` with `nums[k-1]` (last written value), not `nums[read-1]` (previous read position). After skipping several duplicates, the read head is far ahead of the write head; comparing neighbors on the read side misses the comparison you actually need.
+**Forgetting to handle the empty array.**
+`removeDuplicates([])` — if `w` starts at 1 and the array is empty, you return 1 instead of 0. Always check edge cases: empty input, single element, all duplicates, all different.
 
-4. **Forgetting to handle empty input** — An empty array `[]` or empty string `""` is a valid input. Index operations like `arr[0]` or `arr.length - 1` return `undefined` and `-1` on empty inputs. Guard with `if (!arr.length) return ...` at the top of your function when the result for empty input differs from the general case.
+**Modifying the array while reading it with a separate index.**
+In the write cursor pattern this is intentional — but if `w === r` you're overwriting the element you just read. This is fine because `nums[w] = nums[r]` when `w === r` is a no-op (you're writing the value to itself).
 
-5. **Two-pass patterns: wrong accumulation order** — In the prefix-product pattern, the left-pass must run left → right and the right-pass must run right → left. Reversing either direction means you include the current element in its own product.
+**Edge cases to always check**:
+- Empty array `[]`
+- Single-element array `[1]`
+- All elements identical `[2, 2, 2, 2]`
+- Already sorted / already valid
+- Negative numbers in prefix sums (the pattern still works — don't assume positive)
 
-**Edge Cases to Always Test**:
-- Empty array `[]` or empty string `""`
-- Single element `[42]` or single character `"a"`
-- All elements the same `[3, 3, 3, 3]`
-- Already sorted / already reversed
-- Palindrome with spaces and punctuation (`"A man, a plan..."`)
-- String with only non-alphanumeric characters (`"!@#$"`)
+**Debugging tips**: print `(r, w, nums.slice(0, w))` at each iteration of a write cursor. For two pointers, print `(L, R, s[L], s[R])`. For prefix passes, print the `result` array after the forward pass and again after the backward pass.
 
-**Debugging Tips**:
-- Print `left`, `right`, and the current values at each iteration to confirm the pointers are moving as expected
-- For write cursor bugs, print `k` (write head) after every iteration to see which elements are being kept
-- For two-pass problems, print the `result` array after each pass to confirm left products and right products are computed correctly before they're combined
-
----
-
-## 7. Practice Path
-
-### Starter — Build Intuition
-
-- [ ] **Reverse Array** *(no LeetCode link — implement from scratch)*
-  *Pure Level 1: forces you to control both pointers, nail the `left < right` condition, and practice swapping.*
-
-- [ ] [27. Remove Element](https://leetcode.com/problems/remove-element/)
-  *First write cursor problem: one value to filter out, simplest possible compaction.*
-
-- [ ] [26. Remove Duplicates from Sorted Array](https://leetcode.com/problems/remove-duplicates-from-sorted-array/)
-  *Write cursor with a comparison: tests whether you compare to the write head, not the read head.*
-
-### Core — Master the Pattern
-
-- [ ] [88. Merge Sorted Array](https://leetcode.com/problems/merge-sorted-array/) → [mental model](../problems/088-merge-sorted-array/mental-model.md)
-  *Write cursor from the back — the hardest part is recognizing that writing right-to-left avoids overwriting unread values.*
-
-- [ ] [125. Valid Palindrome](https://leetcode.com/problems/valid-palindrome/)
-  *Converging two pointers with character filtering: tests Level 3 cleanly.*
-
-### Challenge — Combine & Extend
-
-- [ ] [238. Product of Array Except Self](https://leetcode.com/problems/product-of-array-except-self/) → [mental model](../problems/238-product-of-array-except-self/mental-model.md)
-  *Two-pass prefix+suffix: requires seeing that one pass can't do it alone.*
-
-- [ ] [271. Encode and Decode Strings](https://leetcode.com/problems/encode-and-decode-strings/) *(Premium)* → [mental model](../problems/271-encode-and-decode-strings/mental-model.md)
-  *Length-prefixed encoding: tests careful index arithmetic in the decoder.*
-
-**Suggested Order**:
-
-1. **Reverse Array** — Start here. Implement it by hand. If you can do this cleanly (with correct condition and swap), all other Level 1 problems follow.
-
-2. **27. Remove Element** — First write cursor. Simpler than deduplication because you just filter a single value — no comparison needed.
-
-3. **26. Remove Duplicates** — Write cursor with comparison. Slightly harder: the comparison is subtle (write head, not read head).
-
-4. **88. Merge Sorted Array** — Introduces the backward write cursor. Read its mental model first to understand *why* writing from the back is the key insight.
-
-5. **125. Valid Palindrome** — Level 3 in full. Skip logic is the tricky part; get it clean here before moving on.
-
-6. **238. Product of Array Except Self** — After the basics are solid, try this. The two-pass insight is the main thing to internalize.
-
-7. **271. Encode and Decode Strings** — Last, and the most implementation-heavy. Focus on the decoder's index arithmetic.

@@ -13,9 +13,9 @@ export interface FundamentalsGuide {
   sections: string[]  // top-level ## headings
 }
 
-function extractTitle(content: string): string {
+function extractTitle(content: string, fallback = ''): string {
   const match = content.match(/^#\s+(.+)$/m)
-  return match ? match[1] : ''
+  return match ? match[1] : fallback
 }
 
 function extractH2Sections(content: string): string[] {
@@ -34,7 +34,7 @@ export function getFundamentalsGuide(slug: string): FundamentalsGuide | null {
   return {
     slug,
     filename,
-    title: extractTitle(content),
+    title: extractTitle(content, slug.replace(/-/g, ' ')),
     content,
     sections: extractH2Sections(content),
   }
@@ -59,4 +59,12 @@ export function getSectionForFundamentals(slug: string) {
     }
   }
   return null
+}
+
+// Return the section that immediately precedes the one linked to this slug
+export function getPrecedingSection(slug: string) {
+  const allSections = JOURNEY.flatMap(phase => phase.sections)
+  const idx = allSections.findIndex(s => s.fundamentalsSlug === slug)
+  if (idx <= 0) return null
+  return allSections[idx - 1]
 }

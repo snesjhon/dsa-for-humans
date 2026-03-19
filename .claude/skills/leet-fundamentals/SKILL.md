@@ -47,6 +47,8 @@ You are generating a **foundational concept guide** that helps the user build de
 
 Create a guide following this structure:
 
+**Important**: Do NOT include a `# Title` heading or a `> Phase / Prerequisites` blockquote at the top of the guide. The page renders the title, phase, and prerequisites automatically from journey data. Start the guide directly with `## 1. Overview`.
+
 ---
 
 #### 1. Overview
@@ -59,18 +61,32 @@ Create a guide following this structure:
 
 #### 2. Core Concept & Mental Model
 
-**Real-world analogy** — always open with a concrete analogy (city map, building, maze, etc.) that maps directly to the concept. Name its components explicitly: what the nodes are, what the edges are, what the algorithm does in analogy terms.
+Open with a concrete real-world analogy (city map, assembly line, maze, etc.) — 2-4 sentences establishing the core metaphor. Name what each algorithmic concept maps to in the analogy.
 
-**Concept Map** (Mermaid): show relationships between the core ideas, not a flowchart of steps.
+Then two subsections, modeled on `leet-mental`:
 
-```mermaid
-graph TD
-    {core idea} --> {property 1}
-    {core idea} --> {property 2}
-    ...
-```
+---
 
-**Complexity table**: one table covering all operations.
+##### Understanding the Analogy
+
+Named subsections — use the analogy vocabulary exclusively, no variable names or TypeScript:
+
+- **The Setup** — what do we have, what are we trying to accomplish, what are the constraints?
+- **[Key mechanism(s)]** — explain the central techniques through the analogy. Cover what makes each one work and what would go wrong without it. 1-2 subsections depending on how many techniques the topic has.
+- **Why These Approaches** — why does this strategy work? What would be worse? What makes it efficient?
+- **A Simple Example** — walk through a short concrete scenario using *only analogy terms*. End with: "Now you understand the tools. Let's build them step by step."
+
+**This subsection has zero code.** It exists so the reader fully understands the approach conceptually before any implementation appears.
+
+---
+
+##### How I Think Through This
+
+**Exactly two paragraphs. No subsections. No code.**
+
+**Paragraph 1 — Recognition walkthrough:** First-person prose. When I see a problem of this type, here's what I ask myself. Name the key questions or signals inline. Walk through the decision process. End by stating which tool/approach the signals point to and why.
+
+**Paragraph 2 — Concrete trace:** Open with "Take `[simple example]`:" on its own line. Narrate each step, naming what I notice and what I decide. End with the result and ✓.
 
 ---
 
@@ -92,7 +108,18 @@ A manual step-by-step trace on a small, concrete example. Show the state at ever
 **The one thing to get right**
 One or two sentences identifying the single most important insight, gotcha, or ordering constraint for this level. Then show the consequence of getting it wrong (wrong output, infinite loop, etc.).
 
-**Code** — short, focused TypeScript. The prose above does the explaining. The code is the confirmation. Avoid inline comments restating what the prose already said. Keep it under ~20 lines when possible.
+**Code** — short, focused TypeScript showing the pattern for this level. The prose above does the explaining; the code is the confirmation. Keep it under ~20 lines.
+
+**CRITICAL**: Place the `:::stackblitz` directive on the very next line after the closing ` ``` ` with no text in between. The renderer strips the TypeScript block when `:::stackblitz` immediately follows it — if any text appears between them, the static code block shows alongside the embed (spoiling the exercise).
+
+Each level has exactly one multi-exercise embed. The embed uses the `exercises` and `solutions` attributes (comma-separated filenames). This renders a single embed with tabs: `Exercise 1 | Exercise 1 Solution | Exercise 2 | Exercise 2 Solution | Exercise 3 | Exercise 3 Solution`.
+
+`step` is the level number (1, 2, or 3) and `total` is always 3.
+
+```typescript
+// pattern sketch for this level
+```
+:::stackblitz{step=N total=3 exercises="stepN-exercise1-problem.ts,stepN-exercise2-problem.ts,stepN-exercise3-problem.ts" solutions="stepN-exercise1-solution.ts,stepN-exercise2-solution.ts,stepN-exercise3-solution.ts"}
 
 **Mental anchor** — one sentence in a blockquote that the reader can memorize:
 > "DFS = go deep, mark first, backtrack. The visited set is the only thing stopping cycles from looping forever."
@@ -120,7 +147,18 @@ Cover 2 patterns that go beyond the building blocks — real problem variations 
 
 #### 5. Decision Framework
 
-Mermaid decision tree: how to recognize which pattern applies. Should be actionable — each leaf should name a specific technique.
+**Concept Map** (Mermaid): show relationships between the core ideas of this topic — not a flowchart of steps.
+
+```mermaid
+graph TD
+    {core idea} --> {property 1}
+    {core idea} --> {property 2}
+    ...
+```
+
+**Complexity table**: one table covering all key operations for this topic.
+
+**Decision tree** (Mermaid): how to recognize which pattern applies. Should be actionable — each leaf names a specific technique.
 
 **Recognition signals table**: problem keywords → technique.
 
@@ -133,14 +171,6 @@ Mermaid decision tree: how to recognize which pattern applies. Should be actiona
 - 3-5 mistakes, each with: what goes wrong, why it's tempting, how to fix it
 - Edge cases list
 - Debugging tips (what to print/trace, how to spot the failure)
-
----
-
-#### 7. Practice Path
-
-Organize problems from the DSA path into Starter / Core / Challenge tiers. For each problem, add one sentence explaining *what specifically it tests* from this guide. Link to existing study guides when available.
-
-End with a Suggested Order: numbered list with a reason for each step.
 
 ---
 
@@ -158,79 +188,130 @@ End with a Suggested Order: numbered list with a reason for each step.
 
 ---
 
-### Step 5: Generate TypeScript Exercise Files
+### Step 5: Generate Paired Step Files
 
-Create one `.ts` file per building-block level in a subdirectory named after the topic slug.
+For each building-block level, create a **paired** `stepN-problem.ts` + `stepN-solution.ts` in a subdirectory named after the topic slug.
 
 **Directory**: `./app/fundamentals/{topic-slug}/`
 - Example: "Graph Traversal DFS" → `./app/fundamentals/graph-traversal-dfs/`
+- The slug must exactly match the `fundamentalsSlug` field in `journey.ts` — this is what the platform uses to serve files via the API.
 
-**Reference examples**: Read an existing fundamentals guide (e.g. `./app/fundamentals/graphs-fundamentals.md`) to match the tone and structure.
+**File naming**: `stepN-exerciseM-problem.ts` + `stepN-exerciseM-solution.ts`
 
-**File naming**: `level-1-{concept-name}.ts`, `level-2-{concept-name}.ts`, etc.
+- N = level number (1, 2, 3 — matches the Building Block level)
+- M = exercise number within that level (1, 2, 3)
+- Example for Level 1: `step1-exercise1-problem.ts`, `step1-exercise1-solution.ts`, `step1-exercise2-problem.ts`, etc.
 
-**Each file must follow this structure exactly**:
+With 3 levels × 3 exercises = **9 pairs (18 files total)** per guide.
+
+**How the embed is wired**: The fundamentals page passes `fundamentalsSlug` to `MarkdownRenderer`, which passes `base="fundamentals"` to `WebContainerEmbed`, which fetches from `/api/step-file?slug={fundamentalsSlug}&file={file}&base=fundamentals`. Files are resolved as `app/fundamentals/{slug}/{file}`. No extra wiring needed — just place the files in the correct directory.
+
+---
+
+#### stepN-exerciseM-problem.ts structure
+
+Each file contains **exactly one function** and its tests. Single responsibility — one concept, one exercise.
 
 ```typescript
 // =============================================================================
-// Level N: {Level Name from guide}
+// {Topic} — Level N, Exercise M: {Exercise Title}
 // =============================================================================
-// Before running: npx ts-node {filename}.ts
-// Goal: {one sentence describing what this level practices}
+// Goal: {one sentence describing what this exercise practices}
 //
-// {Optional: one or two lines of context if the level has a key shift
-//  from previous levels — e.g. "There is no adjacency list to build here.
-//  Each cell IS the node."}
-
-// -----------------------------------------------------------------------------
-// Exercise 1
-// {Clear description of what the function should do.}
-// {One or two sentences of context if needed.}
+// {Function description}
 //
 // Example:
-//   {functionName}({input}) → {expected output}
+//   {functionName}({input})  → {expected output}
 //   {functionName}({input2}) → {expected output2}
-// -----------------------------------------------------------------------------
+// =============================================================================
 function {functionName}({params}): {returnType} {
-  throw new Error("TODO");
+  throw new Error('not implemented');
 }
 
-test('{description}', {functionName}({input}), {expected});
-test('{description}', {functionName}({input2}), {expected2});
-// ... 4-6 tests per exercise covering normal cases and edge cases
+test('{description}', () => {functionName}({input}), {expected});
+test('{description}', () => {functionName}({input2}), {expected2});
+// ... 4-6 tests covering normal cases, edge cases, and boundary conditions
 
-// -----------------------------------------------------------------------------
-// Exercise 2
-// ...same structure...
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Exercise 3
-// ...same structure...
-// -----------------------------------------------------------------------------
-
-// =============================================================================
-// Tests — all should print PASS
-// =============================================================================
-
-function test(desc: string, actual: unknown, expected: unknown): void {
-  const pass = JSON.stringify(actual) === JSON.stringify(expected);
-  console.log(`${pass ? 'PASS' : 'FAIL'} ${desc}`);
-  if (!pass) {
-    console.log(`  expected: ${JSON.stringify(expected)}`);
-    console.log(`  received: ${JSON.stringify(actual)}`);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function test(desc: string, fn: () => unknown, expected: unknown): void {
+  try {
+    const actual = fn();
+    const pass = JSON.stringify(actual) === JSON.stringify(expected);
+    console.log(`${pass ? 'PASS' : 'FAIL'} ${desc}`);
+    if (!pass) {
+      console.log(`  expected: ${JSON.stringify(expected)}`);
+      console.log(`  received: ${JSON.stringify(actual)}`);
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message === 'not implemented') {
+      console.log(`TODO  ${desc}`);
+    } else {
+      throw e;
+    }
   }
 }
 ```
 
-**Rules for exercise files**:
-- **Leave all function bodies as `throw new Error("TODO")`** — the user fills in implementations
-- Each file has exactly 3 exercises, each slightly harder than the last
-- Exercises progress: basic case → variation → combined/harder
-- Test cases: 4-6 per exercise, covering a normal case, edge cases (single element, empty, etc.), and boundary conditions
-- The `test()` helper goes at the **bottom** of the file
-- Tests are called inline after each function definition (not grouped at bottom)
-- Keep exercise descriptions concrete: show the exact input/output in the example block
+**Rules for problem files**:
+- One function per file — the file title, goal, and all tests are for that one exercise
+- Function body throws `new Error('not implemented')` — the user fills it in
+- Tests use the **thunk form** `() => functionName(input)` so `Error('not implemented')` is caught and prints `TODO`
+- For void/in-place functions, put the mutation call inside the thunk: `() => { const a = [...]; fn(a); return a; }`
+- Test cases: 4-6 per file, covering normal, edge (empty, single), and boundary conditions
+- The `test()` helper goes under `// ─── Helpers ───` at the bottom (auto-folded in the editor)
+- Exercises within a level progress: basic → variation → combined/harder
+
+---
+
+#### stepN-exerciseM-solution.ts structure
+
+Identical layout to the problem file but the function body is **fully implemented** and all tests print PASS.
+
+```typescript
+// =============================================================================
+// {Topic} — Level N, Exercise M: {Exercise Title} — SOLUTION
+// =============================================================================
+// Goal: {one sentence}
+
+function {functionName}({params}): {returnType} {
+  // working implementation
+}
+
+test('{description}', () => {functionName}({input}), {expected});
+// ... all tests
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function test(...) { /* identical to problem file */ }
+```
+
+---
+
+### Step 5b: Validate Step Files
+
+Run all pairs from the topic subdirectory. All must exit 0.
+
+```bash
+cd app/fundamentals/{topic-slug}/
+
+# Level 1
+npx tsx step1-exercise1-problem.ts   # Expected: TODO lines, no crashes
+npx tsx step1-exercise1-solution.ts  # Expected: PASS lines only
+npx tsx step1-exercise2-problem.ts
+npx tsx step1-exercise2-solution.ts
+npx tsx step1-exercise3-problem.ts
+npx tsx step1-exercise3-solution.ts
+
+# Level 2
+npx tsx step2-exercise1-problem.ts
+npx tsx step2-exercise1-solution.ts
+# ... repeat for all 9 pairs
+
+# Level 3
+npx tsx step3-exercise3-problem.ts
+npx tsx step3-exercise3-solution.ts
+```
+
+If any solution file exits non-zero or prints FAIL lines, fix it before proceeding.
 
 ---
 
@@ -326,7 +407,7 @@ Ready to dive in? Start with the 'Building Blocks' section! 🚀
 - **Tone**: plain, direct, progressive. Build confidence with each level.
 - **Links**: always link to existing fundamentals guides for prerequisites, and to existing study guides for practice problems
 - **Progression**: each level solves exactly one new problem the previous level couldn't handle. Name that problem explicitly in the bridge sentence.
-- **Exercise files**: always generate alongside the markdown guide (Step 5). Leave all implementations as `throw new Error("TODO")` — never fill them in.
+- **Step files**: always generate paired `stepN-problem.ts` + `stepN-solution.ts` alongside the markdown guide (Step 5). Leave all problem file implementations as `throw new Error('not implemented')` — never fill them in. Solution files must all print PASS.
 
 ---
 

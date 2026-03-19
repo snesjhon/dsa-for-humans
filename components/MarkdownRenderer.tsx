@@ -11,6 +11,7 @@ interface MarkdownRendererProps {
   content: string
   className?: string
   problemSlug?: string
+  fundamentalsSlug?: string
 }
 
 // Split markdown into alternating markdown/mermaid segments.
@@ -19,6 +20,7 @@ type Segment =
   | { type: 'markdown'; text: string }
   | { type: 'mermaid'; chart: string }
   | { type: 'stackblitz'; file: string; step: number; total: number; solution: string }
+  | { type: 'stackblitz-multi'; step: number; total: number; exercises: string[]; solutions: string[] }
 
 function splitMermaid(content: string): Segment[] {
   const segments: Segment[] = []
@@ -57,49 +59,59 @@ function extractTrailingTsBlock(text: string): { before: string; code: string } 
 
 function splitStackBlitz(segments: Segment[]): Segment[] {
   const result: Segment[] = []
-  const fence = /^:::stackblitz\{file="([^"]+)" step=(\d+) total=(\d+) solution="([^"]+)"\}$/gm
+  const singleFence = /^:::stackblitz\{file="([^"]+)" step=(\d+) total=(\d+) solution="([^"]+)"\}$/gm
+  const multiFence  = /^:::stackblitz\{step=(\d+) total=(\d+) exercises="([^"]+)" solutions="([^"]+)"\}$/gm
 
   for (const seg of segments) {
     if (seg.type !== 'markdown') {
       result.push(seg)
       continue
     }
+
+    // Build a combined list of all matches (single + multi) sorted by position
+    type RawMatch = { index: number; length: number; seg: Segment }
+    const matches: RawMatch[] = []
+
+    singleFence.lastIndex = 0
+    let m: RegExpExecArray | null
+    while ((m = singleFence.exec(seg.text)) !== null) {
+      matches.push({
+        index: m.index,
+        length: m[0].length,
+        seg: { type: 'stackblitz', file: m[1], step: parseInt(m[2], 10), total: parseInt(m[3], 10), solution: m[4] },
+      })
+    }
+
+    multiFence.lastIndex = 0
+    while ((m = multiFence.exec(seg.text)) !== null) {
+      matches.push({
+        index: m.index,
+        length: m[0].length,
+        seg: {
+          type: 'stackblitz-multi',
+          step: parseInt(m[1], 10),
+          total: parseInt(m[2], 10),
+          exercises: m[3].split(','),
+          solutions: m[4].split(','),
+        },
+      })
+    }
+
+    matches.sort((a, b) => a.index - b.index)
+
     let cursor = 0
-    let match: RegExpExecArray | null
-    fence.lastIndex = 0
-    while ((match = fence.exec(seg.text)) !== null) {
-      if (match.index > cursor) {
-        const textBefore = seg.text.slice(cursor, match.index)
+    for (const hit of matches) {
+      if (hit.index > cursor) {
+        const textBefore = seg.text.slice(cursor, hit.index)
         const extracted = extractTrailingTsBlock(textBefore)
         if (extracted) {
           if (extracted.before.trim()) result.push({ type: 'markdown', text: extracted.before })
-          result.push({
-            type: 'stackblitz',
-            file: match[1],
-            step: parseInt(match[2], 10),
-            total: parseInt(match[3], 10),
-            solution: match[4],
-          })
         } else {
           result.push({ type: 'markdown', text: textBefore })
-          result.push({
-            type: 'stackblitz',
-            file: match[1],
-            step: parseInt(match[2], 10),
-            total: parseInt(match[3], 10),
-            solution: match[4],
-          })
         }
-      } else {
-        result.push({
-          type: 'stackblitz',
-          file: match[1],
-          step: parseInt(match[2], 10),
-          total: parseInt(match[3], 10),
-          solution: match[4],
-        })
       }
-      cursor = match.index + match[0].length
+      result.push(hit.seg)
+      cursor = hit.index + hit.length
     }
     if (cursor < seg.text.length) {
       result.push({ type: 'markdown', text: seg.text.slice(cursor) })
@@ -108,7 +120,7 @@ function splitStackBlitz(segments: Segment[]): Segment[] {
 
   return result.filter(s => {
     if (s.type === 'mermaid') return s.chart.trim()
-    if (s.type === 'stackblitz') return true
+    if (s.type === 'stackblitz' || s.type === 'stackblitz-multi') return true
     return s.type === 'markdown' && s.text.trim().length > 0
   })
 }
@@ -150,7 +162,7 @@ const MD_COMPONENTS: React.ComponentProps<typeof ReactMarkdown>['components'] = 
   a: ({ href, children }) => <a href={href} className="dfh-a">{children}</a>,
 }
 
-export default function MarkdownRenderer({ content, className = '', problemSlug }: MarkdownRendererProps) {
+export default function MarkdownRenderer({ content, className = '', problemSlug, fundamentalsSlug }: MarkdownRendererProps) {
   const segments = splitStackBlitz(splitMermaid(content))
 
   return (
@@ -160,15 +172,34 @@ export default function MarkdownRenderer({ content, className = '', problemSlug 
           return <MermaidChart key={i} chart={seg.chart} />
         }
         if (seg.type === 'stackblitz') {
-          if (!problemSlug) return null
+          const slug = problemSlug ?? fundamentalsSlug
+          if (!slug) return null
           return (
             <WebContainerEmbed
               key={i}
-              file={seg.file}
+              tabs={[{ label: 'Try It', file: seg.file }, { label: 'Solution', file: seg.solution }]}
               step={seg.step}
               total={seg.total}
-              solution={seg.solution}
-              problemSlug={problemSlug}
+              problemSlug={slug}
+              base={fundamentalsSlug ? 'fundamentals' : undefined}
+            />
+          )
+        }
+        if (seg.type === 'stackblitz-multi') {
+          const slug = problemSlug ?? fundamentalsSlug
+          if (!slug) return null
+          const tabs = seg.exercises.flatMap((ex, idx) => [
+            { label: `Exercise ${idx + 1}`, file: ex },
+            { label: `Exercise ${idx + 1} Solution`, file: seg.solutions[idx] ?? ex },
+          ])
+          return (
+            <WebContainerEmbed
+              key={i}
+              tabs={tabs}
+              step={seg.step}
+              total={seg.total}
+              problemSlug={slug}
+              base={fundamentalsSlug ? 'fundamentals' : undefined}
             />
           )
         }

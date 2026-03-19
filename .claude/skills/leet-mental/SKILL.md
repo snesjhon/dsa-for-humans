@@ -585,6 +585,7 @@ Before considering a mental model complete, verify all four required sections ar
 - ❌ Dumping complete code at the end instead of building it incrementally
 - ❌ **Not having a clear break between "understanding the analogy" and "building the code"**
 - ❌ **Filling in the TODO in any problem file** — each `stepN-problem.ts` body must throw `new Error('not implemented')` until the learner implements it; only `stepN-solution.ts` and `solution.ts` have working code
+- ❌ **Calling a void/in-place function outside the test thunk** — if the function mutates in-place and returns void, the setup (build input) and mutation call must live inside `() => { ... return result }` so that `Error('not implemented')` is caught and prints `TODO` instead of crashing the process
 - ❌ **Showing working solution code in mental-model.md code blocks** — the typescript code blocks above each `:::stackblitz` directive must only show the conceptual snippet or skeletal structure for that step (pseudocode, key logic outline, or partial illustrative code); the full working implementation lives only in `stepN-solution.ts` and `solution.ts`, never in the narrative markdown
 - ❌ **Multiple peer-level technique sections** after the algorithm steps — if you need deeper explanation, use ONE section with subsections (what it is, how it fits the analogy, code), not separate `## The Reversal Technique`, `## The Four-Pointer Technique`, `## Visualizing the Four Pointers`, etc.
 - ❌ **Checklists, "Ready for the Solution?" prompts, or "The Mental Model Checklist" sections** — these add no pedagogical value and dilute the analogy
@@ -662,6 +663,25 @@ function solveProblem(...): ReturnType {
 // Tests
 test('{desc}', () => solveProblem(input), expected);
 test('{desc}', () => solveProblem(input), expected);
+```
+
+**In-place / void functions**: if the problem mutates a data structure and returns `void` (e.g. reverse a list in-place), the mutation call MUST happen inside the thunk — never outside it. Calling it outside means `throw new Error('not implemented')` propagates uncaught, crashing the process instead of printing `TODO`.
+
+```typescript
+// ❌ WRONG — crashes when function is unimplemented
+const list = createList([1, 2, 3]);
+reverseList(list);
+test('basic reverse', () => listToArray(list), [3, 2, 1]);
+
+// ✅ CORRECT — mutation inside thunk, throw is caught
+test('basic reverse', () => {
+  const list = createList([1, 2, 3]);
+  reverseList(list);
+  return listToArray(list);
+}, [3, 2, 1]);
+```
+
+```typescript
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 // (auto-folded in the editor — must be present for the file to run)

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getFundamentalsGuide, getAllFundamentalsSlugs, getSectionForFundamentals } from '@/lib/fundamentals'
+import { getFundamentalsGuide, getAllFundamentalsSlugs, getSectionForFundamentals, getPrecedingSection } from '@/lib/fundamentals'
 import { extractHeadings } from '@/lib/headings'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import TableOfContents from '@/components/TableOfContents'
@@ -21,7 +21,16 @@ export default function FundamentalsPage({ params }: Props) {
   const context = getSectionForFundamentals(params.slug)
   const section = context?.section
   const phase = context?.phase
-  const headings = extractHeadings(guide.content)
+  const prereq = getPrecedingSection(params.slug)
+
+  // Strip the leading # h1 and the > Prerequisites blockquote from the markdown
+  // so they don't duplicate what the page header already renders
+  const strippedContent = guide.content
+    .replace(/^#[^#].*\n+/, '')                          // remove h1
+    .replace(/^>[\s\S]*?(?=\n---|\n##|\n#)/m, '')        // remove leading blockquote
+    .trimStart()
+
+  const headings = extractHeadings(strippedContent)
 
   return (
     <div className="block lg:grid w-full items-start" style={{ gridTemplateColumns: '260px 1fr 260px', columnGap: '6rem' }}>
@@ -51,7 +60,7 @@ export default function FundamentalsPage({ params }: Props) {
             {phase && <span className="text-xs" style={{ color: 'var(--fg-gutter)' }}>{phase.emoji} {phase.label}</span>}
           </div>
           <h1 className="text-5xl font-bold leading-tight" style={{ color: 'var(--fg)' }}>
-            {guide.title.replace(' - Fundamentals', '')}
+            {section?.label ?? guide.title.replace(/\s*[–-]\s*Fundamentals/i, '')}
           </h1>
           {section && (
             <p className="mt-3 text-lg italic leading-snug" style={{ color: 'var(--cyan)' }}>
@@ -60,34 +69,26 @@ export default function FundamentalsPage({ params }: Props) {
           )}
         </div>
 
-        {/* Problems that follow this guide */}
-        {section && (section.firstPass.length > 0 || section.reinforce.length > 0) && (
-          <div className="rounded-xl p-5" style={{ background: 'var(--bg-alt)', border: '1px solid var(--border)' }}>
-            <p className="text-sm mb-3" style={{ color: 'var(--fg-alt)' }}>
-              <span className="font-semibold" style={{ color: 'var(--fg)' }}>After reading:</span>{' '}
-              these problems reinforce what you'll build here.
+        {/* Prerequisites */}
+        <div className="rounded-xl p-5" style={{ background: 'var(--bg-alt)', border: '1px solid var(--border)' }}>
+          <p className="text-sm mb-1" style={{ color: 'var(--fg-alt)' }}>
+            <span className="font-semibold" style={{ color: 'var(--fg)' }}>Prerequisites:</span>
+          </p>
+          {prereq ? (
+            <Link href={prereq.fundamentalsSlug ? `/fundamentals/${prereq.fundamentalsSlug}` : '/'}
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80 mt-2"
+              style={{ background: 'var(--purple-tint)', color: 'var(--purple)', border: '1px solid color-mix(in srgb, var(--purple) 20%, transparent)' }}>
+              {prereq.label} Fundamentals
+            </Link>
+          ) : (
+            <p className="text-sm italic mt-1" style={{ color: 'var(--fg-comment)' }}>
+              None — this is the starting point of the path.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {section.firstPass.map(({ id }) => (
-                <Link key={id} href={`/problems/${id}`}
-                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ background: 'var(--green-tint)', color: 'var(--green)', border: '1px solid color-mix(in srgb, var(--green) 20%, transparent)' }}>
-                  ▶ {id}
-                </Link>
-              ))}
-              {section.reinforce.map(({ id }) => (
-                <Link key={id} href={`/problems/${id}`}
-                  className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                  style={{ background: 'var(--orange-tint)', color: 'var(--orange)', border: '1px solid color-mix(in srgb, var(--orange) 20%, transparent)' }}>
-                  ↩ {id}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Guide content — bare prose */}
-        <MarkdownRenderer content={guide.content} />
+        <MarkdownRenderer content={strippedContent} fundamentalsSlug={params.slug} />
 
         {/* Footer nav */}
         <div className="flex items-center justify-between pt-8" style={{ borderTop: '1px solid var(--border)' }}>
