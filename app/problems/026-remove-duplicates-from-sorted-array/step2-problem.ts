@@ -1,19 +1,25 @@
 // =============================================================================
-// Remove Duplicates from Sorted Array — Step 1 of 2: Initialize the Writing Hand — SOLUTION
+// Remove Duplicates from Sorted Array — Step 2 of 2: Scan and Catalogue New Titles
 // =============================================================================
-// Goal: Set up the writing hand at position 1, since the first book is always
-//       the first unique title in the curated section.
+// Goal: The reading hand scans every book; when it finds a title different from
+//       the last one the writing hand placed, copy it forward and advance the
+//       writing hand. Return the final catalog count.
+//
+// Prior steps are complete and locked inside the function body.
 
 function removeDuplicates(nums: number[]): number {
-  // Writing hand starts at 1 — the first book is already in the curated section
+  // ✓ Step 1: Writing hand starts at 1 (locked)
   let k = 1;
 
-  return k;
+  throw new Error('not implemented');
 }
 
-// Tests — all must print PASS
-test('single element stays', () => removeDuplicates([1]), 1);
-test('writing hand starts at 1', () => removeDuplicates([5]), 1);
+// Tests
+test('single element', () => removeDuplicates([1]), 1);
+test('[1, 1, 2] → 2', () => removeDuplicates([1, 1, 2]), 2);
+test('[1, 1, 1] → 1', () => removeDuplicates([1, 1, 1]), 1);
+test('[1, 2, 3] → 3', () => removeDuplicates([1, 2, 3]), 3);
+test('[0,0,1,1,1,2,2,3,3,4] → 5', () => removeDuplicates([0, 0, 1, 1, 1, 2, 2, 3, 3, 4]), 5);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function test(desc: string, fn: () => unknown, expected: unknown): void {

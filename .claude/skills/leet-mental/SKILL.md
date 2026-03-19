@@ -585,6 +585,7 @@ Before considering a mental model complete, verify all four required sections ar
 - ❌ Dumping complete code at the end instead of building it incrementally
 - ❌ **Not having a clear break between "understanding the analogy" and "building the code"**
 - ❌ **Filling in the TODO in any problem file** — each `stepN-problem.ts` body must throw `new Error('not implemented')` until the learner implements it; only `stepN-solution.ts` and `solution.ts` have working code
+- ❌ **Showing working solution code in mental-model.md code blocks** — the typescript code blocks above each `:::stackblitz` directive must only show the conceptual snippet or skeletal structure for that step (pseudocode, key logic outline, or partial illustrative code); the full working implementation lives only in `stepN-solution.ts` and `solution.ts`, never in the narrative markdown
 - ❌ **Multiple peer-level technique sections** after the algorithm steps — if you need deeper explanation, use ONE section with subsections (what it is, how it fits the analogy, code), not separate `## The Reversal Technique`, `## The Four-Pointer Technique`, `## Visualizing the Four Pointers`, etc.
 - ❌ **Checklists, "Ready for the Solution?" prompts, or "The Mental Model Checklist" sections** — these add no pedagogical value and dilute the analogy
 
@@ -647,7 +648,6 @@ function test(desc: string, fn: () => unknown, expected: unknown): void {
 // Goal: {one sentence from the analogy describing what this step accomplishes}
 //
 // Prior steps are complete and locked inside the function body.
-// Implement the TODO below, then run: npx tsx stepN-problem.ts
 
 function solveProblem(...): ReturnType {
   // ✓ Step 1: {what step 1 does} (locked)
@@ -656,7 +656,6 @@ function solveProblem(...): ReturnType {
   // ✓ Step N-1: {what prior step does} (locked)
   // ...
 
-  // TODO: {one-line hint describing what to implement for step N}
   throw new Error('not implemented');
 }
 

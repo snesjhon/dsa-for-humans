@@ -1,43 +1,18 @@
 // =============================================================================
-// Remove Duplicates from Sorted Array — Step 1 of 1: The Two-Hand Sweep
+// Remove Duplicates from Sorted Array — Step 1 of 2: Initialize the Writing Hand
 // =============================================================================
-// Goal: Writing hand (k) starts at slot 1. Reading hand (i) scans from slot 1.
-//       When nums[i] !== nums[k-1] (new title), write nums[k] = nums[i] and k++.
-//       Return k — the number of unique titles in the clean section.
-//
-// Implement the TODO below, then run: npx tsx step1-problem.ts
+// Goal: Set up the writing hand at position 1, since the first book is always
+//       the first unique title in the curated section.
 
 function removeDuplicates(nums: number[]): number {
-  // TODO: initialize k=1, scan i from 1 to end,
-  //       when nums[i] !== nums[k-1]: place nums[k]=nums[i] and k++,
-  //       return k
   throw new Error('not implemented');
 }
 
-// Tests
-test('single element', () => removeDuplicates([1]), 1);
-test('[1,1,2] returns k=2', () => removeDuplicates([1, 1, 2]), 2);
-test('[1,1,2] modifies array correctly', () => {
-  const nums = [1, 1, 2];
-  const k = removeDuplicates(nums);
-  return nums.slice(0, k);
-}, [1, 2]);
-test('all duplicates returns k=1', () => removeDuplicates([5, 5, 5, 5]), 1);
-test('no duplicates', () => {
-  const nums = [1, 2, 3];
-  const k = removeDuplicates(nums);
-  return nums.slice(0, k);
-}, [1, 2, 3]);
-test('[0,0,1,1,1,2,2,3,3,4] returns k=5', () => removeDuplicates([0, 0, 1, 1, 1, 2, 2, 3, 3, 4]), 5);
-test('[0,0,1,1,1,2,2,3,3,4] modifies array', () => {
-  const nums = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
-  const k = removeDuplicates(nums);
-  return nums.slice(0, k);
-}, [0, 1, 2, 3, 4]);
+// Tests — step 1: only the single-element case passes (no loop yet)
+test('single element stays', () => removeDuplicates([1]), 1);
+test('writing hand starts at 1', () => removeDuplicates([5]), 1);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-// (auto-folded in the editor — must be present for the file to run)
-
 function test(desc: string, fn: () => unknown, expected: unknown): void {
   try {
     const actual = fn();

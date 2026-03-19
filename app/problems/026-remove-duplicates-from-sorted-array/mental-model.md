@@ -1,14 +1,14 @@
-# Remove Duplicates from Sorted Array — Mental Model
+# Remove Duplicates from Sorted Array - Mental Model
 
-## The Librarian's Shelf Analogy
+## The Librarian's Two Hands Analogy
 
-Imagine you're a librarian reorganizing a shelf of books. The shelf is already sorted alphabetically by title, which means all copies of the same book sit together in a cluster. Your mission: create a clean section at the left of the shelf with exactly one copy of each title, then report how many unique titles you placed there.
+Imagine a librarian standing before a long sorted bookshelf where some titles appear more than once — perhaps three copies of *Dune*, two copies of *1984*, and a single copy of *Brave New World*. Her job: rearrange the shelf so that every unique title appears exactly once at the front, and report how many unique titles she found.
 
-You work with two hands. Your **writing hand** tracks the next available slot in the clean section. It starts at slot 1 — the very first book is trivially unique (nothing came before it), so slot 0 is already "placed." Your **reading hand** scans the shelf from slot 1 onward, picking up each book in sequence.
+She uses two hands to accomplish this without touching any other shelf. Her **reading hand** slides along the shelf from left to right, examining each book in turn. Her **writing hand** advances more slowly — it only moves when the reading hand discovers a title that's genuinely different from the last title already placed in the curated section. When that happens, the writing hand places the new book in the next open slot and steps forward.
 
-The rule is simple: when the reading hand picks up a book with the same title as the one just behind the writing hand, it's a duplicate — skip it, move the reading hand forward. When the reading hand finds a *different* title, hand it to the writing hand to place in the clean section, then advance both hands.
+The books between the start and the writing hand form the **curated section** — a clean, duplicate-free catalog that grows one title at a time. The books behind the writing hand are the already-processed originals, still in their slots but no longer relevant to the count.
 
-The sorted shelf gives you a powerful shortcut: since all copies of a title cluster together, you only ever need to compare against the book just behind the writing hand — the most recently placed unique title. You never need to look further back.
+This is exactly the two-pointer technique for removing duplicates in-place. The reading hand is your fast pointer, the writing hand is your slow write-cursor, and the curated section at the front is the final answer.
 
 ---
 
@@ -16,41 +16,35 @@ The sorted shelf gives you a powerful shortcut: since all copies of a title clus
 
 ### The Setup
 
-You have a long shelf of sorted books. Some titles repeat: perhaps three copies of "Arrays", two copies of "Binary Trees", four copies of "Graphs". Your shelf might look like: `[Arrays, Arrays, Arrays, Binary Trees, Binary Trees, Graphs]`.
+The shelf is already sorted — that's the crucial precondition. Because the books are in alphabetical order, all copies of any title sit together in one clump. You never need to search the whole shelf for duplicates; if the book in your reading hand matches the last title your writing hand placed, it's a duplicate. If it doesn't match, it's a new title.
 
-Your job is to compact the left side of the shelf so it holds only unique titles. You'll overwrite duplicate slots with unique books, sliding them forward. At the end, report how many titles occupy the clean section. You cannot use a second shelf — all work happens on the original shelf, in place.
+The librarian doesn't need a separate notepad or a second shelf. She works entirely in-place, overwriting slots as she goes.
 
 ### The Two Hands
 
-The **writing hand** (`k`) marks the next available slot. It begins at slot 1 because slot 0 already holds the first book, which is always unique. As unique titles are discovered, the writing hand places each one and steps forward, always pointing to the next empty slot in the clean section.
+The **writing hand** (`k`) marks the boundary of the curated section. Everything to its left has already been deduplicated and is "final." It starts at position 1 — the very first book is always kept, because there's nothing before it to duplicate.
 
-The **reading hand** (`i`) starts at slot 1 and scans every book rightward, one by one. At each stop it checks: is this the same title as the book just behind the writing hand? If yes — duplicate, move on. If no — new title, alert the writing hand. The writing hand places it and advances.
+The **reading hand** (`i`) starts at position 1 as well and advances one book at a time, every single iteration. It has one job: inspect the current book and decide whether it's a new title.
 
-The critical observation: the writing hand always stays *at or behind* the reading hand. The reading hand races ahead; the writing hand compacts from the left. They can never collide destructively — the writing hand only reaches a slot after the reading hand has already passed it.
+The decision rule is simple: compare the book in the reading hand against the last book the writing hand placed — that's `nums[k-1]`. If they're the same title, the reading hand moves on and the writing hand stays put. If they differ, the writing hand copies the book into its current slot, then steps forward.
 
 ### Why This Approach
 
-A simpler approach might build a new collection from scratch: scan the shelf, collect unique titles in a fresh bin, report the count. That works but requires extra space proportional to the shelf size.
+A naive approach would be to build an entirely new shelf — scan the original, copy unique titles into a fresh list, and return that. It works, but it costs extra space proportional to the number of unique titles.
 
-The two-hand technique avoids extra space because of one insight: **the sorted order guarantees duplicates are adjacent**. Once the writing hand places a title, all remaining copies appear consecutively in the reading hand's upcoming scan. We only need to watch for the moment a new, different title appears — and that moment is always detected by comparing against the last placed book.
+The librarian's two-hands technique costs no extra shelf space at all. Because the shelf is sorted, duplicates are always adjacent, so the comparison is always just "does this book match the one I just placed?" — a single check, never a full scan. The curated section grows exactly as fast as new unique titles are discovered, and the writing hand never overtakes the reading hand (it can only move when the reading hand has already advanced).
 
 ### Simple Example Through the Analogy
 
-Your shelf holds: `[Mystery, Mystery, Romance, Sci-Fi, Sci-Fi, Sci-Fi]`.
+Say the shelf holds: `[1, 1, 2]`.
 
-Both hands start at slot 1. The writing hand rests against "Mystery" (slot 0) as its reference.
+The librarian places her writing hand at slot 1 (the `1` already there is fine — it's the first unique title). Her reading hand also starts at slot 1.
 
-Reading hand picks up "Mystery" at slot 1. Same title as last placed — duplicate, skip. Reading hand moves to slot 2.
+Reading hand examines slot 1: title `1`. Last placed was `1` (at slot 0). Same title — skip. Reading hand moves to slot 2.
 
-Reading hand picks up "Romance" at slot 2. Different from last placed! Writing hand places "Romance" at slot 1 and advances to slot 2. Reading hand moves to slot 3.
+Reading hand examines slot 2: title `2`. Last placed was `1`. Different title! Writing hand copies `2` into slot 1, then steps to slot 2.
 
-Reading hand picks up "Sci-Fi" at slot 3. Different from last placed ("Romance")! Writing hand places "Sci-Fi" at slot 2 and advances to slot 3. Reading hand moves to slot 4.
-
-Reading hand picks up "Sci-Fi" at slot 4. Same as last placed — duplicate, skip. Reading hand moves to slot 5.
-
-Reading hand picks up "Sci-Fi" at slot 5. Same again — skip. Reading hand moves past the end. Done.
-
-Writing hand stopped at slot 3 — the shelf now holds 3 unique titles.
+Reading hand has reached the end. Writing hand is at position 2. The curated section — positions 0 and 1 — holds `[1, 2]`. Two unique titles.
 
 Now you understand HOW to solve the problem. Let's build it step by step.
 
@@ -58,63 +52,52 @@ Now you understand HOW to solve the problem. Let's build it step by step.
 
 ## How I Think Through This
 
-I start with the observation that the array is sorted, so all duplicates are adjacent — that's the key property I exploit. I initialize `k` (the writing hand) to 1, since `nums[0]` is trivially the first unique element and already in place. Then I scan `i` (the reading hand) from index 1 to the end of the array. At each position, I compare `nums[i]` against `nums[k - 1]` — the most recently claimed unique value. If they differ, I've found a new title: I write it to `nums[k]` and increment `k`. If they're equal, it's a duplicate: I advance only `i`. The invariant that keeps everything correct is that `nums[k - 1]` always holds the last unique value placed, so comparing against it is always sufficient to catch a new title.
+I start by recognizing the problem is asking me to partition the array in-place: unique elements go to the front, and I need to report how many there are. I use two variables: `k` (the writing hand, my write-cursor) and `i` (the reading hand, my scanner). Both start at `1` because the element at index 0 is always the first unique title — nothing comes before it to duplicate. The one invariant I maintain is: everything from index `0` up to but not including `k` is already deduplicated and in its final position. When the reading hand finds `nums[i] !== nums[k-1]`, I copy `nums[i]` into `nums[k]` and increment `k`. At the end, `k` holds exactly the count of unique titles.
 
-Tracing `[1, 1, 2, 2, 3]`:
-- Setup: k=1, i=1. Clean section: `[1, ...]`
-- i=1: nums[1]=1, nums[k-1]=nums[0]=1 → duplicate → i=2
-- i=2: nums[2]=2, nums[k-1]=nums[0]=1 → new → nums[1]=2, k=2, i=3. Clean: `[1, 2, ...]`
-- i=3: nums[3]=2, nums[k-1]=nums[1]=2 → duplicate → i=4
-- i=4: nums[4]=3, nums[k-1]=nums[1]=2 → new → nums[2]=3, k=3, i=5. Clean: `[1, 2, 3, ...]`
-- i=5: done → return k=3 ✓
+Take `[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]`. Both hands start at index 1. Reading hand hits index 1 (`0`): matches `nums[0]=0`, skip. Index 2 (`1`): differs from `nums[0]=0` — write hand copies `1` to `nums[1]`, k becomes 2. Index 3 (`1`): matches `nums[1]=1`, skip. Index 4 (`1`): matches, skip. Index 5 (`2`): differs from `nums[1]=1` — write `2` to `nums[2]`, k=3. Index 6 (`2`): matches, skip. Index 7 (`3`): differs — write `3` to `nums[3]`, k=4. Index 8 (`3`): matches, skip. Index 9 (`4`): differs — write `4` to `nums[4]`, k=5. Loop ends. Return `5`. Array front: `[0,1,2,3,4,...]` ✓
 
 ---
 
 ## Building the Algorithm
 
-### Step 1: The Two-Hand Sweep
+Each step introduces one concept from the Librarian's Two Hands, then a StackBlitz embed to try it.
 
-The writing hand starts at slot 1 — slot 0 is already the first unique book. The reading hand scans from slot 1 onward. At each book, there are only two outcomes: same title as the last placed book (duplicate — skip), or a new title (place it and advance both hands).
+### Step 1: Initialize the Writing Hand
 
-The key detail: we compare `nums[i]` against `nums[k - 1]`, not `nums[k]`. The writing hand `k` points to the *next available slot*, so `k - 1` is the index of the book we just placed. Comparing against `nums[k - 1]` is what makes the sorted-array guarantee pay off — we always know what the "last kept title" is.
-
-```mermaid
-flowchart TD
-    Start["k = 1, i = 1\nBoth hands at slot 1"] --> Loop{"More books to scan?"}
-    Loop -->|"No"| Return["Return k"]
-    Loop -->|"Yes"| Compare{"nums[i] same as nums[k-1]?\nSame title as last kept?"}
-    Compare -->|"Duplicate"| Skip["Reading hand moves on\ni++"]
-    Compare -->|"New title"| Place["Place it: nums[k] = nums[i]\nAdvance both: k++, i++"]
-    Skip --> Loop
-    Place --> Loop
-```
-
-Here's the state of both hands processing `[1, 1, 2, 2, 3]`:
-
-| Reading Hand (i) | nums[i] | Last Placed (nums[k-1]) | New Title? | Action | Writing Hand (k) |
-|---|---|---|---|---|---|
-| 1 | 1 | 1 | No  | skip      | 1 |
-| 2 | 2 | 1 | Yes | write + k++ | 2 |
-| 3 | 2 | 2 | No  | skip      | 2 |
-| 4 | 3 | 2 | Yes | write + k++ | 3 |
+Before scanning anything, we set up the writing hand. The first book on the shelf is always unique — there's nothing before it to duplicate. So the writing hand starts at position `1`, meaning "the curated section already contains one book, and the next open slot is at index 1."
 
 ```typescript
 function removeDuplicates(nums: number[]): number {
-  let k = 1; // writing hand: slot 0 is already kept
+  // Writing hand starts at 1: first book is always in the curated section
+  let k = 1;
 
-  for (let i = 1; i < nums.length; i++) {
-    if (nums[i] !== nums[k - 1]) {
-      nums[k] = nums[i]; // place the new title in the clean section
-      k++;               // writing hand advances to the next available slot
-    }
-    // duplicate: only reading hand moves (implicit in for loop)
-  }
+  // (scanning will happen in step 2)
 
-  return k; // number of unique titles in the clean section
+  return k;
 }
 ```
 
-:::stackblitz{file="step1-problem.ts" step=1 total=1 solution="step1-solution.ts"}
+:::stackblitz{file="step1-problem.ts" step=1 total=2 solution="step1-solution.ts"}
+
+### Step 2: Scan and Catalogue New Titles
+
+Now the reading hand sweeps through every book from index `1` to the end. At each position, it checks one question: is this book's title different from the last title the writing hand placed (`nums[k-1]`)?
+
+- **Same title**: duplicate — skip. Reading hand moves on; writing hand stays.
+- **Different title**: new entry — copy to `nums[k]`, advance writing hand, then return the final count.
+
+```typescript
+for (let i = 1; i < nums.length; i++) {
+  if (nums[i] !== nums[k - 1]) {
+    // New title found — writing hand records it and steps forward
+    nums[k] = nums[i];
+    k++;
+  }
+}
+return k; // size of the curated section
+```
+
+:::stackblitz{file="step2-problem.ts" step=2 total=2 solution="step2-solution.ts"}
 
 ---
 
@@ -122,34 +105,36 @@ function removeDuplicates(nums: number[]): number {
 
 Input: `[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]`
 
-| Step | Reading Hand (i) | nums[i] | Writing Hand (k) | Last Placed (nums[k-1]) | New Title? | Action | Clean Section |
-|------|---|---|---|---|---|---|---|
-| Start | 1 | 0 | 1 | nums[0] = 0 | — | initialize | `[0, ...]` |
-| 1 | 1 | 0 | 1 | nums[0] = 0 | No | skip | `[0, ...]` |
-| 2 | 2 | 1 | 1 | nums[0] = 0 | Yes | write + k++ | `[0, 1, ...]` |
-| 3 | 3 | 1 | 2 | nums[1] = 1 | No | skip | `[0, 1, ...]` |
-| 4 | 4 | 1 | 2 | nums[1] = 1 | No | skip | `[0, 1, ...]` |
-| 5 | 5 | 2 | 2 | nums[1] = 1 | Yes | write + k++ | `[0, 1, 2, ...]` |
-| 6 | 6 | 2 | 3 | nums[2] = 2 | No | skip | `[0, 1, 2, ...]` |
-| 7 | 7 | 3 | 3 | nums[2] = 2 | Yes | write + k++ | `[0, 1, 2, 3, ...]` |
-| 8 | 8 | 3 | 4 | nums[3] = 3 | No | skip | `[0, 1, 2, 3, ...]` |
-| 9 | 9 | 4 | 4 | nums[3] = 3 | Yes | write + k++ | `[0, 1, 2, 3, 4]` |
-| Done | — | — | **5** | — | — | return 5 | `[0, 1, 2, 3, 4]` |
+| Step | Reading Hand (i) | nums[i] | Writing Hand (k) | Last Placed (nums[k-1]) | New Title? | Action | Curated Section |
+|------|-----------------|---------|-----------------|------------------------|------------|--------|-----------------|
+| Start | 1 | 0 | 1 | 0 | — | initialize | [0, ...] |
+| i=1 | 1 | 0 | 1 | 0 | No | skip | [0, ...] |
+| i=2 | 2 | 1 | 1 | 0 | Yes | write 1 → nums[1], k=2 | [0, 1, ...] |
+| i=3 | 3 | 1 | 2 | 1 | No | skip | [0, 1, ...] |
+| i=4 | 4 | 1 | 2 | 1 | No | skip | [0, 1, ...] |
+| i=5 | 5 | 2 | 2 | 1 | Yes | write 2 → nums[2], k=3 | [0, 1, 2, ...] |
+| i=6 | 6 | 2 | 3 | 2 | No | skip | [0, 1, 2, ...] |
+| i=7 | 7 | 3 | 3 | 2 | Yes | write 3 → nums[3], k=4 | [0, 1, 2, 3, ...] |
+| i=8 | 8 | 3 | 4 | 3 | No | skip | [0, 1, 2, 3, ...] |
+| i=9 | 9 | 4 | 4 | 3 | Yes | write 4 → nums[4], k=5 | [0, 1, 2, 3, 4] |
+| Done | — | — | 5 | — | — | return 5 | [0, 1, 2, 3, 4] |
 
 ---
 
 ## Common Misconceptions
 
-**"I need to compare nums[i] against everything already in the clean section, not just the last book."** — Because the shelf is sorted, duplicates always cluster. If a book matches anything in the clean section, it *must* match the book directly behind the writing hand — the last placed title. There's no need to look further back.
+**"I need to actually delete the duplicate elements"** — The librarian never physically removes books from the shelf; she just overwrites slots. The problem only asks you to return `k` and ensure the first `k` elements are unique. What happens to the elements beyond index `k` doesn't matter. You're not shrinking the array — you're partitioning it.
 
-**"The writing hand should start at slot 0."** — Slot 0 already holds the first book, which is always unique by definition. Starting `k` at 0 would leave the writing hand pointing at a filled slot, causing the first unique book found to overwrite position 0 (itself) and the count to be off by one. Starting at 1 means slot 0 is pre-claimed and `k` is ready for the next new title.
+**"The writing hand compares against the reading hand's current book"** — The writing hand doesn't look at what the reading hand is holding; it looks at the last book it *placed* (`nums[k-1]`). The reading hand could be several positions ahead. Comparing `nums[i]` to `nums[i-1]` instead of `nums[k-1]` would work only for this specific problem (since input is sorted), but misses the invariant: "everything before k is final." Understanding `nums[k-1]` as "the last catalogued title" is the correct mental model.
 
-**"After the function returns, nums only contains k elements."** — The shelf still has its full original length. Only the first `k` slots hold meaningful unique titles; the remaining slots contain leftover stale values from before. The return value `k` tells you *how far to read* — not how long the shelf became.
+**"Both hands need to start at 0"** — The writing hand starts at `1`, not `0`. The first book is already in the curated section by definition — it has no predecessor to duplicate. Starting k at `0` would cause the writing hand to overwrite `nums[0]` with `nums[1]` on the first new title found, discarding the very first element.
 
-**"I should write first, then compare."** — You must compare first to decide *whether* to write. Writing unconditionally would place every book in the clean section — including duplicates — and nums[k-1] would always equal nums[i] on the very next step, breaking the detection logic entirely.
+**"This only works because the array is sorted"** — Exactly right, and it's worth understanding *why*. Because the shelf is sorted, all copies of a title are adjacent. The only comparison needed is against the immediately last-placed book. If the shelf were unsorted, the reading hand might encounter a title that appeared earlier but not most recently — a simple `nums[i] !== nums[k-1]` check would miss that duplicate entirely.
+
+**"The writing hand can catch up to or pass the reading hand"** — It never can. The reading hand advances every single iteration. The writing hand only advances when it finds a new title, which requires the reading hand to have already moved past the last written position. So `i >= k` always holds, and `nums[k] = nums[i]` is always a safe overwrite — you're never stomping on a value you still need to read.
 
 ---
 
 ## Complete Solution
 
-:::stackblitz{file="solution.ts" step=1 total=1 solution="solution.ts"}
+:::stackblitz{file="solution.ts" step=2 total=2 solution="solution.ts"}

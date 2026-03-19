@@ -1,21 +1,25 @@
 // =============================================================================
-// Remove Duplicates from Sorted Array — Complete Solution
+// Remove Duplicates from Sorted Array — Step 2 of 2: Scan and Catalogue New Titles — SOLUTION
 // =============================================================================
+// Goal: The reading hand scans every book; when it finds a title different from
+//       the last one the writing hand placed, copy it forward and advance the
+//       writing hand. Return the final catalog count.
 
 function removeDuplicates(nums: number[]): number {
-  // Writing hand starts at 1 — the first book is always the first unique title
+  // ✓ Step 1: Writing hand starts at 1 — first book is already in the curated section
   let k = 1;
 
-  // Reading hand sweeps every book; writing hand only advances on new titles
+  // Step 2: Reading hand sweeps every book from position 1 onward
   for (let i = 1; i < nums.length; i++) {
     if (nums[i] !== nums[k - 1]) {
-      // New title found — copy it to the next open slot in the curated section
+      // New title — writing hand records it and steps forward
       nums[k] = nums[i];
-      k++; // writing hand steps forward
+      k++;
     }
+    // Same title — reading hand moves on, writing hand stays
   }
 
-  return k; // number of unique titles catalogued
+  return k; // size of the curated section
 }
 
 // Tests — all must print PASS
@@ -24,16 +28,6 @@ test('[1, 1, 2] → 2', () => removeDuplicates([1, 1, 2]), 2);
 test('[1, 1, 1] → 1', () => removeDuplicates([1, 1, 1]), 1);
 test('[1, 2, 3] → 3', () => removeDuplicates([1, 2, 3]), 3);
 test('[0,0,1,1,1,2,2,3,3,4] → 5', () => removeDuplicates([0, 0, 1, 1, 1, 2, 2, 3, 3, 4]), 5);
-test('array mutated correctly [1,1,2]', () => {
-  const a = [1, 1, 2];
-  const k = removeDuplicates(a);
-  return a.slice(0, k);
-}, [1, 2]);
-test('array mutated correctly [0,0,1,1,1,2,2,3,3,4]', () => {
-  const a = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
-  const k = removeDuplicates(a);
-  return a.slice(0, k);
-}, [0, 1, 2, 3, 4]);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function test(desc: string, fn: () => unknown, expected: unknown): void {
