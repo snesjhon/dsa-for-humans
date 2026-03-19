@@ -99,7 +99,44 @@ Rich, multi-paragraph prose with these named subsections:
 
 ### 4. Building the Algorithm
 
-Each step = **concept** → **concrete example/trace** → **code** → **StackBlitz embed**. Do NOT separate concepts from code into independent sections.
+Each step = **concept** → **concrete example/trace** → **code sketch** → **StackBlitz embed**. Do NOT separate concepts from code into independent sections.
+
+> ⛔ **IRON RULE: Code blocks in mental-model.md NEVER contain working implementation.**
+>
+> The typescript block above each `:::stackblitz` directive is a **thinking scaffold** — it shows the *shape* of the logic (pseudocode, skeleton, key comment outline) to orient the learner before they open the editor. The complete, runnable implementation lives **only** inside `stepN-solution.ts` (the Solution tab). If someone could copy your code block, paste it into the problem file, and pass the tests — you've violated this rule.
+>
+> ✅ Correct code block: shows structure, raises the right question, leaves the implementation blank
+> ❌ Wrong code block: shows working logic the learner just has to read and understand
+
+**What belongs in each Step:**
+
+1. **Analogy prose** — explain the concept through the analogy. What is this step doing in the real-world metaphor? What question should the learner be asking themselves before they start coding?
+2. **Concrete walk-through** — trace through a small example using analogy terms to show what this step accomplishes. Make the "why" undeniable.
+3. **Code sketch** — show the *shape* of the logic: variable names, loop structure, key conditional, and `// what goes here?` comment. Leave the core logic as a comment or omit it. The learner should be able to look at this and think "I know what to do" — not "I just need to type this in."
+4. **StackBlitz embed** — where the learner actually writes the code and checks against the solution.
+
+**Examples of the code sketch distinction:**
+
+```typescript
+// ✅ GOOD — orients without solving
+while (left < right) {
+  // skip non-exhibits on each side
+  // compare the two exhibits
+  // advance both inspectors inward
+}
+```
+
+```typescript
+// ❌ BAD — this IS the solution, learner has nothing to figure out
+while (left < right && !isAlphanumeric(s[left])) {
+  left++;
+}
+while (left < right && !isAlphanumeric(s[right])) {
+  right--;
+}
+if (s[left].toLowerCase() !== s[right].toLowerCase()) return false;
+left++; right--;
+```
 
 ### 5. Tracing through an Example
 
@@ -290,37 +327,42 @@ Each step introduces one concept from the [analogy name], then a StackBlitz embe
 
 ### Step 1: [First Concept]
 
-[Elaborate on this concept using the analogy. Concrete example or diagram.
-Cover edge cases that belong here. Build the "why" before showing code.]
+[Explain this step's concept through the analogy. What is the learner setting up, and why?
+Walk through how it applies to a small concrete example using analogy terms.
+Raise the question the learner should answer before opening the editor.]
 
 ```typescript
-// Code for step 1 only
-let variable = initialValue;
-return result; // step 1 only — [what this partial result means]
+// SKETCH ONLY — no working implementation here
+// set up [analogy role of variable]
+// return [what step 1 alone produces and why]
 ```
 
 :::stackblitz{file="step1-problem.ts" step=1 total=N solution="step1-solution.ts"}
 
 ### Step 2: [Second Concept]
 
-[Trace through the example showing how this step transforms the structure.
-Reader already understands step 1 — show what step 2 adds and why.]
+[Trace through the concrete example to show what this step adds. The reader already
+has step 1 internalized — now: what new decision does this step make, and when?
+Use the analogy to make the condition or loop feel inevitable, not arbitrary.]
 
 ```typescript
-for (...) {
-    // [analogy concept in comment]
+// SKETCH ONLY — no working implementation here
+while ([analogy condition]) {
+  // [what each inspector / pointer does and why]
 }
+// [what both pointers now guarantee before the next step]
 ```
 
 :::stackblitz{file="step2-problem.ts" step=2 total=N solution="step2-solution.ts"}
 
 ### Step N: [Final Concept]
 
-[Close the loop. Explain why this last piece is necessary. Remaining edge cases.
-After this step the reader has a complete working solution.]
+[Close the loop. What does this last step decide, and what happens if it's missing?
+After the StackBlitz embed the learner has a complete working solution.]
 
 ```typescript
-return result;
+// SKETCH ONLY — no working implementation here
+// compare / combine / return — [what the final answer represents in analogy terms]
 ```
 
 :::stackblitz{file="stepN-problem.ts" step=N total=N solution="stepN-solution.ts"}
@@ -565,9 +607,10 @@ Before considering a mental model complete, verify all four required sections ar
 10. Could you read both paragraphs, close your laptop, and reconstruct the algorithm on a whiteboard?
 
 **Section 4 — Building the Algorithm (Woven Steps)**
-11. Does each step wove concept + example/trace + code + StackBlitz embed together (not separated)?
+11. Does each step weave concept + example/trace + code sketch + StackBlitz embed together (not separated)?
 12. Is the :::stackblitz directive placed immediately after the code block for each step?
 13. By the final step, does the reader have a complete working solution?
+14. **Code sketch check (CRITICAL):** For every code block above a `:::stackblitz` — could a learner copy it, paste it into the problem file, and pass the tests? If yes, it's implementation code, not a sketch. Replace the working logic with comments or pseudocode that convey the *shape* without giving away the answer.
 
 **Section 5 — Tracing through an Example**
 14. Is there a markdown table with one row per loop iteration (or meaningful phase)?
@@ -613,7 +656,7 @@ Before considering a mental model complete, verify all four required sections ar
 - ❌ **Not having a clear break between "understanding the analogy" and "building the code"**
 - ❌ **Filling in the TODO in any problem file** — each `stepN-problem.ts` body must throw `new Error('not implemented')` until the learner implements it; only `stepN-solution.ts` and `solution.ts` have working code
 - ❌ **Calling a void/in-place function outside the test thunk** — if the function mutates in-place and returns void, the setup (build input) and mutation call must live inside `() => { ... return result }` so that `Error('not implemented')` is caught and prints `TODO` instead of crashing the process
-- ❌ **Showing working solution code in mental-model.md code blocks** — the typescript code blocks above each `:::stackblitz` directive must only show the conceptual snippet or skeletal structure for that step (pseudocode, key logic outline, or partial illustrative code); the full working implementation lives only in `stepN-solution.ts` and `solution.ts`, never in the narrative markdown
+- ❌ **Showing working solution code in mental-model.md code blocks** — this is the single most common mistake; code blocks above `:::stackblitz` directives must be SKETCHES only (pseudocode, commented structure, shape of the logic). If a learner could copy your code block and pass the tests, you wrote implementation code instead of a sketch. The full working code lives exclusively in `stepN-solution.ts` and `solution.ts`.
 - ❌ **Multiple peer-level technique sections** after the algorithm steps — if you need deeper explanation, use ONE section with subsections (what it is, how it fits the analogy, code), not separate `## The Reversal Technique`, `## The Four-Pointer Technique`, `## Visualizing the Four Pointers`, etc.
 - ❌ **Checklists, "Ready for the Solution?" prompts, or "The Mental Model Checklist" sections** — these add no pedagogical value and dilute the analogy
 
