@@ -25,7 +25,7 @@ function extractH2Sections(content: string): string[] {
 
 export function getFundamentalsGuide(slug: string): FundamentalsGuide | null {
   const filename = `${slug}-fundamentals.md`
-  const filePath = path.join(FUNDAMENTALS_DIR, filename)
+  const filePath = path.join(FUNDAMENTALS_DIR, slug, filename)
   if (!fs.existsSync(filePath)) return null
 
   const raw = fs.readFileSync(filePath, 'utf-8')
@@ -44,9 +44,10 @@ export function getAllFundamentalsSlugs(): string[] {
   if (!fs.existsSync(FUNDAMENTALS_DIR)) return []
 
   return fs
-    .readdirSync(FUNDAMENTALS_DIR)
-    .filter(f => f.endsWith('-fundamentals.md') && !f.includes('sql'))
-    .map(f => f.replace('-fundamentals.md', ''))
+    .readdirSync(FUNDAMENTALS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory() && entry.name !== '[slug]')
+    .filter(entry => fs.existsSync(path.join(FUNDAMENTALS_DIR, entry.name, `${entry.name}-fundamentals.md`)))
+    .map(entry => entry.name)
 }
 
 // Find which journey section links to this fundamentals slug

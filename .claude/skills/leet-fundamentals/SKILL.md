@@ -43,7 +43,7 @@ You are generating a **foundational concept guide** that helps the user build de
 
 ### Step 3: Generate Comprehensive Guide
 
-**Reference example**: `./app/fundamentals/graphs-fundamentals.md` and `./app/fundamentals/graph-traversal-dfs-fundamentals.md` are the canonical examples of this style. Read them before generating to match the tone, depth, and structure.
+**Reference example**: `./app/fundamentals/graphs/graphs-fundamentals.md` and `./app/fundamentals/graph-traversal-dfs/graph-traversal-dfs-fundamentals.md` are the canonical examples of this style. Read them before generating to match the tone, depth, and structure.
 
 Create a guide following this structure:
 
@@ -176,13 +176,14 @@ graph TD
 
 ### Step 4: Save the Guide
 
-1. Create filename from topic:
+1. Create slug and filename from topic:
    - Convert to lowercase
    - Replace spaces with hyphens
-   - Add `-fundamentals.md`
-   - Example: "Binary Trees" → `binary-trees-fundamentals.md`
+   - Slug example: "Binary Trees" → `binary-trees`
+   - Filename: `{slug}-fundamentals.md` → `binary-trees-fundamentals.md`
 
-2. Save to: `./app/fundamentals/{filename}`
+2. Save to: `./app/fundamentals/{slug}/{filename}`
+   - Example: `./app/fundamentals/binary-trees/binary-trees-fundamentals.md`
 
 4. Confirm successful save
 
@@ -376,7 +377,7 @@ After generating and saving the guide, provide:
 ```markdown
 ✅ **Generated**: {topic} Fundamentals Guide
 
-📁 **Saved to**: `app/fundamentals/{filename}`
+📁 **Saved to**: `app/fundamentals/{slug}/{filename}`
 
 📊 **Guide Includes**:
 

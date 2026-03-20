@@ -6,7 +6,7 @@ A Next.js 14 DSA learning platform. Content is organized into three directories:
 
 - `app/problems/{id}-{slug}/` — Problem mental models and test cases
 - `app/patterns/*.md` — Pattern concept guides
-- `app/fundamentals/{slug}-fundamentals.md` — Fundamentals guides
+- `app/fundamentals/{slug}/{slug}-fundamentals.md` — Fundamentals guides
 
 The learning path (phases, sections, problems) is defined in `lib/journey.ts`.
 
