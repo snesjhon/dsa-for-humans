@@ -51,6 +51,7 @@ export const JOURNEY: Phase[] = [
         fundamentalsBlurb:
           'Index manipulation, the write-cursor pattern, and converging two pointers — the three tools behind every array and string technique you will use throughout the path.',
         firstPass: [
+          { id: '344', isFirstPass: true },
           { id: '026', isFirstPass: true },
           { id: '088', isFirstPass: true },
           { id: '125', isFirstPass: true },
@@ -182,7 +183,6 @@ export const JOURNEY: Phase[] = [
         ],
         firstPass: [
           { id: '509', isFirstPass: true },
-          { id: '344', isFirstPass: true },
           { id: '078', isFirstPass: true },
         ],
         reinforce: [{ id: '022', isFirstPass: false }],
