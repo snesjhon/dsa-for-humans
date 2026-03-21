@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { AppIcon } from './AppIcon'
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
@@ -39,7 +40,8 @@ export function SiteHeader() {
           className="w-full flex items-center gap-6"
           style={{ height: '54px', maxWidth: '1152px', margin: '0 auto', padding: '0 24px' }}
         >
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <AppIcon size={34} />
             <span style={{
               fontFamily: 'var(--font-display)',
               fontStyle: 'italic',

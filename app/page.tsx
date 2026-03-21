@@ -8,10 +8,6 @@ type PMap = Record<string, { title: string; hasMentalModel: boolean }>
 const PHASE_COLORS = ['var(--purple)', 'var(--blue)', 'var(--green)', 'var(--orange)', 'var(--cyan)']
 const pColor = (n: number) => PHASE_COLORS[(n - 1) % PHASE_COLORS.length]
 
-// Per-step accent colors — cycles independently of phase so adjacent steps vary
-const STEP_COLORS = ['var(--purple)', 'var(--blue)', 'var(--green)', 'var(--orange)', 'var(--cyan)']
-const sColor = (n: number) => STEP_COLORS[(n - 1) % STEP_COLORS.length]
-
 // Full-bleed: counters main's 24px padding to reach viewport edges
 const BLEED = { marginLeft: '-24px', marginRight: '-24px' } as const
 // Re-centers content at max-width inside a full-bleed section
@@ -135,12 +131,14 @@ function StepGuideCard({ href, label, hook, stepNum, color }: {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
-      background: `color-mix(in srgb, ${color} 13%, var(--bg))`,
-      border: `1px solid color-mix(in srgb, ${color} 32%, transparent)`,
+      background: 'transparent',
+      backdropFilter: 'blur(12px)',
+      border: `1px solid color-mix(in srgb, ${color} 22%, transparent)`,
       borderRadius: '0.875rem',
       padding: '20px 22px',
       height: '100%',
       boxSizing: 'border-box',
+      boxShadow: `0 4px 24px color-mix(in srgb, ${color} 10%, transparent), 0 1px 4px rgba(0,0,0,0.08)`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
         <span style={{
@@ -461,7 +459,7 @@ export default function HomePage() {
             <div style={inner('0 24px')}>
               {entries.map((entry, entryIdx) => {
                 const { section, revisitIds, revisitFromLabel, stepNum } = entry
-                const accent         = sColor(stepNum)
+                const accent         = color
                 const stepLabel      = String(stepNum).padStart(2, '0')
                 const hasNewProblems = section.firstPass.length > 0
                 const hasRevisits    = revisitIds.length > 0
