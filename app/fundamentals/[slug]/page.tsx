@@ -33,14 +33,14 @@ export default function FundamentalsPage({ params }: Props) {
   const headings = extractHeadings(strippedContent)
 
   return (
-    <div className="block lg:grid w-full items-start" style={{ gridTemplateColumns: '260px 1fr 260px', columnGap: '6rem' }}>
+    <div className="block lg:grid w-full items-start" style={{ gridTemplateColumns: '260px 1fr', columnGap: '6rem' }}>
       {/* Left: TOC — sticky */}
       <aside className="hidden lg:block sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto">
         <TableOfContents headings={headings} title="Contents" />
       </aside>
 
       {/* Middle: Content — readable width */}
-      <article className="min-w-0 space-y-8 py-2">
+      <article className="min-w-0 space-y-8 py-2 pr-16">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--fg-gutter)' }}>
           <Link href="/" className="hover:opacity-70 transition-opacity">Path</Link>
@@ -105,10 +105,6 @@ export default function FundamentalsPage({ params }: Props) {
         </div>
       </article>
 
-      {/* Right: Journey position */}
-      <aside className="hidden lg:block sticky top-20 self-start max-h-[calc(100vh-5rem)] overflow-y-auto">
-        <JourneyNav activeFundamentalsSlug={params.slug} />
-      </aside>
     </div>
   )
 }
