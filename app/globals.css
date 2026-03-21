@@ -7,6 +7,8 @@
    Source: github.com/snesjhon/gitlab-nvim-theme
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
+  --active-phase-color: var(--purple); /* updated by PhaseTracker on scroll */
+
   --bg:           #FAFAFF;
   --bg-alt:       #F0F0FA;
   --bg-highlight: #EFEFFC;
@@ -58,7 +60,14 @@
   --purple-tint:  #2D2650;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  margin: 0;
+  padding: 0;
   background-color: var(--bg);
   color: var(--fg);
   font-family: var(--font-body, system-ui, sans-serif);
@@ -89,8 +98,8 @@ body {
    Prose
    ============================================================================= */
 .dfh-prose {
-  font-size: 1.0625rem;
-  line-height: 1.75;
+  font-size: 1.125rem;
+  line-height: 1.8;
   color: var(--fg-alt);
 }
 
