@@ -1,19 +1,19 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 1: Stamp the Keepers
+// Arrays & Strings — Level 1, Exercise 1: Write the Keepers
 // =============================================================================
-// Goal: Practice the most direct form of the scanner + stamper.
+// Goal: Practice the most direct form of the reader + writer.
 //
 // The conveyor belt carries integers — some positive, some zero, some negative.
 // Keep only the positive values (> 0) at the front, in their original order.
 // Everything else is discarded off the belt.
-// Return the count of items stamped.
+// Return the count of items written.
 //
-// The scanner reads every slot without skipping.
-// The stamper only advances when the scanner finds a positive value.
+// The reader reads every slot without skipping.
+// The writer only advances when the reader finds a positive value.
 //
 // Example:
 //   keepPositives([-1, 3, 0, 2, -4, 5]) → 3   (belt becomes [3, 2, 5, ...])
-//   keepPositives([0, -1, -2])           → 0   (nothing to stamp)
+//   keepPositives([0, -1, -2])           → 0   (nothing to write)
 // =============================================================================
 function keepPositives(nums: number[]): number {
   throw new Error('not implemented');

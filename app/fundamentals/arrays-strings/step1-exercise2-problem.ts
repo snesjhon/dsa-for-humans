@@ -1,11 +1,11 @@
 // =============================================================================
 // Arrays & Strings — Level 1, Exercise 2: Filter the Belt
 // =============================================================================
-// Goal: Use the scanner + stamper to reject a specific value.
+// Goal: Use the reader + writer to reject a specific value.
 //
-// The belt carries mixed items. Your stamper has one rule: skip anything
-// equal to val. Everything else is a keeper — stamp it and advance.
-// Return the count of items stamped (items not equal to val).
+// The belt carries mixed items. Your writer has one rule: skip anything
+// equal to val. Everything else is a keeper — write it and advance.
+// Return the count of items written (items not equal to val).
 //
 // Example:
 //   removeElement([3, 2, 2, 3], 3)          → 2   (belt becomes [2, 2, ...])

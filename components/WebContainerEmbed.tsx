@@ -7,6 +7,7 @@ import type { WebContainer } from '@webcontainer/api';
 
 // Module-level refs populated by Effect 1 after imports resolve
 let _Transaction: typeof Transaction | null = null;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _foldEffect: any = null;
 
@@ -87,6 +88,10 @@ interface Props {
   base?: string;
 }
 
+function lsKey(slug: string, file: string) {
+  return `dfh-code:${slug}:${file}`;
+}
+
 export default function WebContainerEmbed({
   tabs,
   step,
@@ -105,15 +110,50 @@ export default function WebContainerEmbed({
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const codeRef = useRef('');
+  const activeFileRef = useRef('');
+  const isResettingRef = useRef(false);
+  const runCodeRef = useRef<() => void>(() => {});
 
   // Keep codeRef current on every render so Effect 1's async callback
   // always reads the latest value without a stale closure
   codeRef.current = code;
+  runCodeRef.current = runCode;
 
   const activeFile = tabs[tabIdx]?.file ?? '';
+  activeFileRef.current = activeFile;
+
+  // Prevent Escape from propagating past the editor container
+  // useEffect(() => {
+  //   const el = editorRef.current;
+  //   if (!el) return;
+  //   const handler = (e: KeyboardEvent) => {
+  //     if (e.key === 'Escape') {
+  //       e.stopPropagation();
+  //       e.preventDefault();
+  //     }
+  //   };
+  //   el.addEventListener('keydown', handler);
+  //   return () => el.removeEventListener('keydown', handler);
+  // }, []);
+
+  // Cmd/Ctrl+Enter to run — capture phase so vim never sees it first
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation();
+        runCodeRef.current();
+      }
+    };
+    el.addEventListener('keydown', handler, true);
+    return () => el.removeEventListener('keydown', handler, true);
+  }, []);
 
   // Load file content when tab/file changes — sets code as reset trigger
   useEffect(() => {
+    isResettingRef.current = true;
     setCode('');
     setOutput('');
     setStatus('idle');
@@ -122,9 +162,15 @@ export default function WebContainerEmbed({
     )
       .then((r) => r.json())
       .then(({ content }) => {
-        if (content) setCode(content);
+        isResettingRef.current = false;
+        if (content) {
+          const saved = localStorage.getItem(lsKey(problemSlug, activeFile));
+          setCode(saved || content);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        isResettingRef.current = false;
+      });
   }, [activeFile, problemSlug]);
 
   // Effect 1: Mount CodeMirror once
@@ -138,8 +184,9 @@ export default function WebContainerEmbed({
         { Transaction },
         { HighlightStyle, syntaxHighlighting, foldEffect },
         { javascript },
-        { vim, Vim },
+        { vim, Vim, getCM },
         { tags },
+        { indentMore, indentLess },
       ] = await Promise.all([
         import('codemirror'),
         import('@codemirror/view'),
@@ -148,6 +195,7 @@ export default function WebContainerEmbed({
         import('@codemirror/lang-javascript'),
         import('@replit/codemirror-vim'),
         import('@lezer/highlight'),
+        import('@codemirror/commands'),
       ]);
 
       if (cancelled || !editorRef.current) return;
@@ -223,6 +271,41 @@ export default function WebContainerEmbed({
         { tag: tags.angleBracket, color: 'var(--fg-alt)' },
       ]);
 
+      const interceptKeys = EditorView.domEventHandlers({
+        keydown(event, view) {
+          if (event.key === 'Tab') {
+            event.stopPropagation();
+            event.preventDefault();
+            const isInsert = getCM(view)?.state.vim?.insertMode;
+            if (isInsert) {
+              event.shiftKey ? indentLess(view) : indentMore(view);
+            }
+          }
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            event.preventDefault();
+          }
+        },
+      });
+
+      const saveToStorage = EditorView.updateListener.of((update) => {
+        if (update.docChanged && !isResettingRef.current) {
+          const text = update.state.doc.toString();
+          try {
+            if (text.trim()) {
+              localStorage.setItem(
+                lsKey(problemSlug, activeFileRef.current),
+                text,
+              );
+            } else {
+              localStorage.removeItem(
+                lsKey(problemSlug, activeFileRef.current),
+              );
+            }
+          } catch {}
+        }
+      });
+
       const view = new EditorView({
         doc: codeRef.current,
         extensions: [
@@ -231,6 +314,8 @@ export default function WebContainerEmbed({
           javascript({ typescript: true }),
           theme,
           syntaxHighlighting(highlight),
+          interceptKeys,
+          saveToStorage,
         ],
         parent: editorRef.current,
       });
@@ -241,8 +326,8 @@ export default function WebContainerEmbed({
 
       // Activate relative + absolute line numbers (standard nvim defaults)
       // Vim.setOption is a static call — does not need the EditorView
-      Vim.setOption('relativenumber', true);
-      Vim.setOption('number', true);
+      // Vim.setOption('relativenumber', false);
+      // Vim.setOption('number', false);
 
       foldHelpers(view);
     })();
@@ -339,7 +424,7 @@ export default function WebContainerEmbed({
               ? '⏳ Installing…'
               : status === 'running'
                 ? '⏳ Running…'
-                : '▶ Run'}
+                : <>Run <kbd className="dfh-wc-kbd">{typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'}↵</kbd></>}
           </button>
         </div>
         {output && (

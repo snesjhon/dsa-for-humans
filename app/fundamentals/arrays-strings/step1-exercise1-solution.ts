@@ -1,21 +1,21 @@
 // =============================================================================
-// Arrays & Strings — Level 1, Exercise 1: Stamp the Keepers — SOLUTION
+// Arrays & Strings — Level 1, Exercise 1: Write the Keepers — SOLUTION
 // =============================================================================
-// Goal: Practice the most direct form of the scanner + stamper.
+// Goal: Practice the most direct form of the reader + writer.
 //
-// The scanner (r) reads every slot. The stamper (w) only advances when
-// the scanner finds a positive value — it writes the keeper into slot w,
-// then bumps w forward by one. Everything else is skipped off the belt.
+// The reader reads every slot. The writer only advances when
+// the reader finds a positive value — it writes the keeper into slot writer,
+// then bumps writer forward by one. Everything else is skipped off the belt.
 // =============================================================================
 function keepPositives(nums: number[]): number {
-  let w = 0;
-  for (let r = 0; r < nums.length; r++) {
-    if (nums[r] > 0) {
-      nums[w] = nums[r];
-      w++;
+  let writer = 0;
+  for (let reader = 0; reader < nums.length; reader++) {
+    if (nums[reader] > 0) {
+      nums[writer] = nums[reader];
+      writer++;
     }
   }
-  return w;
+  return writer;
 }
 
 test('mixed signs',     () => keepPositives([-1, 3, 0, 2, -4, 5]),  3);

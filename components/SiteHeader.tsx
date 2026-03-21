@@ -1,18 +1,18 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { AppIcon } from './AppIcon'
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { AppIcon } from './AppIcon';
 
 export function SiteHeader() {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const check = () => setScrolled(window.scrollY > 12)
-    check()
-    window.addEventListener('scroll', check, { passive: true })
-    return () => window.removeEventListener('scroll', check)
-  }, [])
+    const check = () => setScrolled(window.scrollY > 12);
+    check();
+    window.addEventListener('scroll', check, { passive: true });
+    return () => window.removeEventListener('scroll', check);
+  }, []);
 
   return (
     <header
@@ -38,18 +38,34 @@ export function SiteHeader() {
       <div style={{ position: 'relative' }}>
         <nav
           className="w-full flex items-center gap-6"
-          style={{ height: '54px', maxWidth: '1152px', margin: '0 auto', padding: '0 24px' }}
+          style={{
+            height: '54px',
+            maxWidth: '1152px',
+            margin: '0 auto',
+            padding: '0 24px',
+          }}
         >
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <Link
+            href="/"
+            style={{
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              flexShrink: 0,
+            }}
+          >
             <AppIcon size={34} />
-            <span style={{
-              fontFamily: 'var(--font-display)',
-              fontStyle: 'italic',
-              fontWeight: 400,
-              fontSize: '1.125rem',
-              color: 'var(--fg)',
-              letterSpacing: '-0.01em',
-            }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                fontSize: '1.125rem',
+                color: 'var(--fg)',
+                letterSpacing: '-0.01em',
+              }}
+            >
               DSA for Humans
             </span>
           </Link>
@@ -69,7 +85,8 @@ export function SiteHeader() {
             left: 0,
             right: 0,
             height: '1px',
-            background: 'color-mix(in srgb, var(--active-phase-color) 30%, transparent)',
+            background:
+              'color-mix(in srgb, var(--active-phase-color) 30%, transparent)',
             opacity: scrolled ? 1 : 0,
             transition: 'opacity 450ms ease',
             pointerEvents: 'none',
@@ -77,5 +94,5 @@ export function SiteHeader() {
         />
       </div>
     </header>
-  )
+  );
 }

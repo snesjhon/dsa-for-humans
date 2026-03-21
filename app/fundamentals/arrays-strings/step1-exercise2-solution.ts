@@ -2,14 +2,14 @@
 // Arrays & Strings — Level 1, Exercise 2: Filter the Belt — SOLUTION
 // =============================================================================
 function removeElement(nums: number[], val: number): number {
-  let w = 0;
-  for (let r = 0; r < nums.length; r++) {
-    if (nums[r] !== val) {
-      nums[w] = nums[r];
-      w++;
+  let writer = 0;
+  for (let reader = 0; reader < nums.length; reader++) {
+    if (nums[reader] !== val) {
+      nums[writer] = nums[reader];
+      writer++;
     }
   }
-  return w;
+  return writer;
 }
 
 test('remove middle values',   () => removeElement([3,2,2,3], 3),         2);

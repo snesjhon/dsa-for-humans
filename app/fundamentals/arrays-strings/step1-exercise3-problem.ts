@@ -1,18 +1,18 @@
 // =============================================================================
 // Arrays & Strings — Level 1, Exercise 3: Even Items Only
 // =============================================================================
-// Goal: Apply the scanner + stamper with your own keep condition.
+// Goal: Apply the reader + writer with your own keep condition.
 //
-// The belt carries a mix of odd and even numbers. Your stamper has a new rule:
-// only stamp even numbers. Odd numbers roll off the belt without being placed.
-// Return the count of even items stamped.
+// The belt carries a mix of odd and even numbers. Your writer has a new rule:
+// only write even numbers. Odd numbers roll off the belt without being placed.
+// Return the count of even items written.
 //
-// The scanner still reads every slot — the only thing that changed is which
+// The reader still reads every slot — the only thing that changed is which
 // items qualify as keepers.
 //
 // Example:
 //   compactEvens([1, 2, 3, 4, 5, 6]) → 3   (belt becomes [2, 4, 6, ...])
-//   compactEvens([1, 3, 5])           → 0   (nothing to stamp)
+//   compactEvens([1, 3, 5])           → 0   (nothing to write)
 // =============================================================================
 function compactEvens(nums: number[]): number {
   throw new Error('not implemented');

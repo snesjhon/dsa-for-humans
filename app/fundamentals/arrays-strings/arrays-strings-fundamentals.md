@@ -14,10 +14,10 @@ This guide covers the three index-based tools that unlock all of that: **the wri
 
 Picture a factory assembly line. A **conveyor belt** carries items from left to right — that's your array. There are two key roles:
 
-- A **scanner** (read pointer) moves steadily from left to right, inspecting every item without exception.
-- A **stamper** (write cursor) sits near the front and only advances when it places a valid item.
+- A **reader** (read pointer) moves steadily from left to right, inspecting every item without exception.
+- A **writer** (write cursor) sits near the front and only advances when it places a valid item.
 
-When you need to compact or filter, the scanner looks at everything, but the stamper only places keepers. The gap between them represents eliminated slots.
+When you need to compact or filter, the reader looks at everything, but the writer only places keepers. The gap between them represents eliminated slots.
 
 For problems that check symmetry or search a sorted sequence, you deploy **two inspectors**: one starts at the left end, one at the right, and they walk toward each other. Each step eliminates a position from further consideration — which is what makes this O(n) instead of O(n²).
 
@@ -31,7 +31,7 @@ The conveyor belt stretches from index 0 to index n-1. Each slot holds one item 
 
 #### The Three Roles on the Line
 
-The **scanner and stamper** (write cursor) work as a pair on the same belt moving forward. The scanner looks at every item. The stamper only places keepers. The gap between them grows as more items are eliminated — that gap is the "graveyard" of discarded slots, which you can safely overwrite.
+The **reader and writer** (write cursor) work as a pair on the same belt moving forward. The reader looks at every item. The writer only places keepers. The gap between them grows as more items are eliminated — that gap is the "graveyard" of discarded slots, which you can safely overwrite.
 
 The **two converging inspectors** start at opposite ends and walk toward each other. They exploit the structure of the belt — sorted order, or the symmetry property of palindromes — to eliminate one slot per step. No item they've already judged needs to be revisited.
 
@@ -43,7 +43,7 @@ All three exploit the fact that arrays are indexed. You never need to look at an
 
 #### A Simple Example
 
-The line is `[3, 2, 2, 1, 2, 4]` and you want to remove all `2`s. The scanner walks forward. Each time it finds a non-2, the stamper places it and advances one slot. When the scanner reaches the end, the stamper has only advanced three times — slots 0, 1, 2 now hold `[3, 1, 4]`. The rest of the belt doesn't matter.
+The line is `[3, 2, 2, 1, 2, 4]` and you want to remove all `2`s. The reader walks forward. Each time it finds a non-2, the writer places it and advances one slot. When the reader reaches the end, the writer has only advanced three times — slots 0, 1, 2 now hold `[3, 1, 4]`. The rest of the belt doesn't matter.
 
 Now you understand the tools. Let's build them step by step.
 
@@ -55,9 +55,9 @@ The first question I ask when I see an array or string problem is: _am I being a
 
 #### Write Cursor
 
-When the problem says "in-place" or "O(1) extra space" and asks me to remove or filter elements, I know I need the write cursor. I place `w = 0` at the front, then let `r` scan every element. Every time `r` finds a keeper, I write it to `nums[w]` and bump `w` forward. Non-keepers — I just move `r` on and leave `w` where it is.
+When the problem says "in-place" or "O(1) extra space" and asks me to remove or filter elements, I know I need the write cursor. I place `writer = 0` at the front, then let `reader` scan every element. Every time `reader` finds a keeper, I write it to `nums[writer]` and bump `writer` forward. Non-keepers — I just move `reader` on and leave `writer` where it is.
 
-The thing I have to remind myself: write _first_, then increment. If I do `w++; nums[w] = nums[r]` I skip slot 0 and the count is wrong. The other thing I keep in mind is that `w` serves double duty — it's both where I write next _and_ the count of valid elements placed so far. When the loop ends, I return `w`, not `w - 1`.
+The thing I have to remind myself: write _first_, then increment. If I do `writer++; nums[writer] = nums[reader]` I skip slot 0 and the count is wrong. The other thing I keep in mind is that `writer` serves double duty — it's both where I write next _and_ the count of valid elements placed so far. When the loop ends, I return `writer`, not `writer - 1`.
 
 #### Two Converging Pointers
 
@@ -89,56 +89,45 @@ The most common array constraint is "do it in-place with O(1) extra space." That
 
 **How to think about it**
 
-You maintain two positions in the same array: `r` (the reader, scanning every element) and `w` (the writer, tracking where the next valid element should land). The reader always advances. The writer only advances when it places something.
+You maintain two positions in the same array: `reader` (scanning every element) and `writer` (tracking where the next valid element should land). The reader always advances. The writer only advances when it places something.
 
-Think of `w` as pointing to the next blank slot in your output. When the scanner finds a keeper, it stamps it into slot `w` and bumps `w` forward by one. Non-keepers are skipped — the reader moves on but the writer stays put, ready to overwrite that slot the next time a keeper arrives.
+Think of `writer` as pointing to the next blank slot in your output. When the reader finds a keeper, it writes it into slot `writer` and bumps `writer` forward by one. Non-keepers are skipped — the reader moves on but the writer stays put, ready to overwrite that slot the next time a keeper arrives.
 
-When the reader finishes, the first `w` positions of the array hold exactly the valid elements. Everything after index `w` is irrelevant — the problem only cares about the first `w` positions.
+When the reader finishes, the first `writer` positions of the array hold exactly the valid elements. Everything after index `writer` is irrelevant — the problem only cares about the first `writer` positions.
 
 **Walking through it**
 
 Remove all `2`s from `[3, 2, 2, 1, 2, 4]`. Expected: first 3 elements are `[3, 1, 4]`, return length `3`.
 
-```
-Start: r=0, w=0  →  [3, 2, 2, 1, 2, 4]
-
-r=0: nums[0]=3 (keep) → stamp into w=0, w becomes 1
-     [3, 2, 2, 1, 2, 4]   r=1, w=1
-
-r=1: nums[1]=2 (skip)
-     [3, 2, 2, 1, 2, 4]   r=2, w=1
-
-r=2: nums[2]=2 (skip)
-     [3, 2, 2, 1, 2, 4]   r=3, w=1
-
-r=3: nums[3]=1 (keep) → stamp into w=1, w becomes 2
-     [3, 1, 2, 1, 2, 4]   r=4, w=2
-
-r=4: nums[4]=2 (skip)
-     [3, 1, 2, 1, 2, 4]   r=5, w=2
-
-r=5: nums[5]=4 (keep) → stamp into w=2, w becomes 3
-     [3, 1, 4, 1, 2, 4]   r=6, w=3
-
-Done: return w=3 → nums[0..2] = [3, 1, 4] ✓
-```
+:::trace
+[
+  {"array":[3,2,2,1,2,4],"reader":0,"writer":0,"action":null,"label":"Start — reader and writer both at index 0, ready to begin."},
+  {"array":[3,2,2,1,2,4],"reader":1,"writer":1,"action":"keep","label":"nums[0]=3 is a keeper → written to writer=0, writer advances to 1."},
+  {"array":[3,2,2,1,2,4],"reader":2,"writer":1,"action":"skip","label":"nums[1]=2 matches val — skipped, reader advances, writer stays at 1."},
+  {"array":[3,2,2,1,2,4],"reader":3,"writer":1,"action":"skip","label":"nums[2]=2 matches val — skipped, reader advances, writer stays at 1."},
+  {"array":[3,1,2,1,2,4],"reader":4,"writer":2,"action":"keep","label":"nums[3]=1 is a keeper → written to writer=1, writer advances to 2."},
+  {"array":[3,1,2,1,2,4],"reader":5,"writer":2,"action":"skip","label":"nums[4]=2 matches val — skipped, reader advances, writer stays at 2."},
+  {"array":[3,1,4,1,2,4],"reader":6,"writer":3,"action":"keep","label":"nums[5]=4 is a keeper → written to writer=2, writer advances to 3."},
+  {"array":[3,1,4,1,2,4],"reader":6,"writer":3,"action":"done","label":"Done — return writer=3. First 3 elements [3, 1, 4] are the result ✓"}
+]
+:::
 
 **The one thing to get right**
 
-`w` is simultaneously "the index to write to" and "the count of valid elements placed so far." If you increment `w` before writing, you skip slot 0 and your count is off by one. If you write without incrementing, you overwrite the same slot forever. Always: write first, then increment.
+`writer` is simultaneously "the index to write to" and "the count of valid elements placed so far." If you increment `writer` before writing, you skip slot 0 and your count is off by one. If you write without incrementing, you overwrite the same slot forever. Always: write first, then increment.
 
 **Code**
 
 ```typescript
 function removeElement(nums: number[], val: number): number {
-  let w = 0;
-  for (let r = 0; r < nums.length; r++) {
-    if (nums[r] !== val) {
-      nums[w] = nums[r];
-      w++;
+  let writer = 0;
+  for (let reader = 0; reader < nums.length; reader++) {
+    if (nums[reader] !== val) {
+      nums[writer] = nums[reader];
+      writer++;
     }
   }
-  return w;
+  return writer;
 }
 ```
 
@@ -171,34 +160,24 @@ Each move **eliminates an entire position** from consideration. After at most `n
 
 Check if `"racecar"` is a palindrome.
 
-```
-s = ['r','a','c','e','c','a','r']
-     L=0                   R=6
-
-Step 1: s[0]='r' === s[6]='r' → match, move both inward
-     L=1               R=5
-
-Step 2: s[1]='a' === s[5]='a' → match, move both inward
-     L=2           R=4
-
-Step 3: s[2]='c' === s[4]='c' → match, move both inward
-     L=3       R=3
-
-Step 4: L >= R → stop. Every pair matched.
-
-Result: palindrome ✓
-```
+:::trace-lr
+[
+  {"chars":["r","a","c","e","c","a","r"],"L":0,"R":6,"action":null,"label":"Start — L at index 0, R at index 6, ready to compare the outer pair."},
+  {"chars":["r","a","c","e","c","a","r"],"L":1,"R":5,"action":"match","label":"s[0]='r' === s[6]='r' — match, both pointers move inward."},
+  {"chars":["r","a","c","e","c","a","r"],"L":2,"R":4,"action":"match","label":"s[1]='a' === s[5]='a' — match, both pointers move inward."},
+  {"chars":["r","a","c","e","c","a","r"],"L":3,"R":3,"action":"match","label":"s[2]='c' === s[4]='c' — match, both pointers move inward."},
+  {"chars":["r","a","c","e","c","a","r"],"L":3,"R":3,"action":"done","label":"L >= R — loop ends. Every pair matched. Palindrome ✓"}
+]
+:::
 
 Check if `"hello"` is a palindrome.
 
-```
-s = ['h','e','l','l','o']
-     L=0               R=4
-
-Step 1: s[0]='h' !== s[4]='o' → mismatch, return false immediately
-
-Result: not a palindrome ✓
-```
+:::trace-lr
+[
+  {"chars":["h","e","l","l","o"],"L":0,"R":4,"action":null,"label":"Start — L at index 0, R at index 4, ready to compare the outer pair."},
+  {"chars":["h","e","l","l","o"],"L":0,"R":4,"action":"mismatch","label":"s[0]='h' !== s[4]='o' — mismatch detected, return false immediately. Not a palindrome ✗"}
+]
+:::
 
 **The one thing to get right**
 
@@ -255,25 +234,21 @@ No extra array needed — the output array accumulates both passes in-place.
 
 `nums = [1, 2, 3, 4]`. Expected output: `[24, 12, 8, 6]`.
 
-```
-Forward pass (prefix product = everything to the LEFT of i):
-
-  i=0: result[0] = prefix = 1          prefix becomes 1 * 1 = 1
-  i=1: result[1] = prefix = 1          prefix becomes 1 * 2 = 2
-  i=2: result[2] = prefix = 2          prefix becomes 2 * 3 = 6
-  i=3: result[3] = prefix = 6          prefix becomes 6 * 4 = 24
-
-  result = [1, 1, 2, 6]
-
-Backward pass (multiply by suffix = everything to the RIGHT of i):
-
-  i=3: result[3] *= suffix=1 → 6*1=6   suffix becomes 1 * 4 = 4
-  i=2: result[2] *= suffix=4 → 2*4=8   suffix becomes 4 * 3 = 12
-  i=1: result[1] *= suffix=12 → 1*12=12 suffix becomes 12 * 2 = 24
-  i=0: result[0] *= suffix=24 → 1*24=24 suffix becomes 24 * 1 = 24
-
-  result = [24, 12, 8, 6] ✓
-```
+:::trace-ps
+[
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":-1,"pass":"forward","accumulator":1,"accName":"prefix","label":"Forward pass begins — result initialized to all 1s, prefix=1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":0,"pass":"forward","accumulator":1,"accName":"prefix","label":"i=0: result[0]=prefix=1, then prefix becomes 1×1=1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":1,"pass":"forward","accumulator":2,"accName":"prefix","label":"i=1: result[1]=prefix=1, then prefix becomes 1×2=2."},
+  {"nums":[1,2,3,4],"result":[1,1,2,1],"currentI":2,"pass":"forward","accumulator":6,"accName":"prefix","label":"i=2: result[2]=prefix=2, then prefix becomes 2×3=6."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"forward","accumulator":24,"accName":"prefix","label":"i=3: result[3]=prefix=6, then prefix becomes 6×4=24. Forward pass complete."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":-1,"pass":"backward","accumulator":1,"accName":"suffix","label":"Backward pass begins — suffix=1, scanning right-to-left."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"backward","accumulator":4,"accName":"suffix","label":"i=3: result[3]×=suffix=1 → 6×1=6, suffix becomes 1×4=4."},
+  {"nums":[1,2,3,4],"result":[1,1,8,6],"currentI":2,"pass":"backward","accumulator":12,"accName":"suffix","label":"i=2: result[2]×=suffix=4 → 2×4=8, suffix becomes 4×3=12."},
+  {"nums":[1,2,3,4],"result":[1,12,8,6],"currentI":1,"pass":"backward","accumulator":24,"accName":"suffix","label":"i=1: result[1]×=suffix=12 → 1×12=12, suffix becomes 12×2=24."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":0,"pass":"backward","accumulator":24,"accName":"suffix","label":"i=0: result[0]×=suffix=24 → 1×24=24. Backward pass complete."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":-1,"pass":"done","accumulator":0,"accName":"","label":"Done — result = [24, 12, 8, 6] ✓"}
+]
+:::
 
 **The one thing to get right**
 
@@ -320,14 +295,14 @@ function productExceptSelf(nums: number[]): number[] {
 
 ```typescript
 function removeDuplicates(nums: number[]): number {
-  let w = 1;
-  for (let r = 1; r < nums.length; r++) {
-    if (nums[r] !== nums[r - 1]) {
-      nums[w] = nums[r];
-      w++;
+  let writer = 1;
+  for (let reader = 1; reader < nums.length; reader++) {
+    if (nums[reader] !== nums[reader - 1]) {
+      nums[writer] = nums[reader];
+      writer++;
     }
   }
-  return nums.length === 0 ? 0 : w;
+  return nums.length === 0 ? 0 : writer;
 }
 ```
 
@@ -423,8 +398,8 @@ graph TD
 
 ## 6. Common Gotchas & Edge Cases
 
-**"I'll write first, then increment `w`" — except you incremented first.**
-It's easy to write `w++; nums[w] = nums[r]` instead of `nums[w] = nums[r]; w++`. The first version skips slot 0 and produces an off-by-one count. Always write to `w` _before_ advancing it.
+**"I'll write first, then increment `writer`" — except you incremented first.**
+It's easy to write `writer++; nums[writer] = nums[reader]` instead of `nums[writer] = nums[reader]; writer++`. The first version skips slot 0 and produces an off-by-one count. Always write to `writer` _before_ advancing it.
 
 **Loop condition `L <= R` for two pointers.**
 When `L === R`, you're examining the middle of an odd-length array. The element always matches itself. If your logic is `if s[L] !== s[R] return false`, this is harmless. But if you decrement `R` and increment `L` past each other, you'll miss or double-count. Use `L < R` and stop cleanly.
@@ -446,4 +421,4 @@ In the write cursor pattern this is intentional — but if `w === r` you're over
 - Already sorted / already valid
 - Negative numbers in prefix sums (the pattern still works — don't assume positive)
 
-**Debugging tips**: print `(r, w, nums.slice(0, w))` at each iteration of a write cursor. For two pointers, print `(L, R, s[L], s[R])`. For prefix passes, print the `result` array after the forward pass and again after the backward pass.
+**Debugging tips**: print `(reader, writer, nums.slice(0, writer))` at each iteration of a write cursor. For two pointers, print `(L, R, s[L], s[R])`. For prefix passes, print the `result` array after the forward pass and again after the backward pass.

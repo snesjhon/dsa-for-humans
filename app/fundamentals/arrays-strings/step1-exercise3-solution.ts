@@ -2,14 +2,14 @@
 // Arrays & Strings — Level 1, Exercise 3: Even Items Only — SOLUTION
 // =============================================================================
 function compactEvens(nums: number[]): number {
-  let w = 0;
-  for (let r = 0; r < nums.length; r++) {
-    if (nums[r] % 2 === 0) {
-      nums[w] = nums[r];
-      w++;
+  let writer = 0;
+  for (let reader = 0; reader < nums.length; reader++) {
+    if (nums[reader] % 2 === 0) {
+      nums[writer] = nums[reader];
+      writer++;
     }
   }
-  return w;
+  return writer;
 }
 
 test('mixed',        () => compactEvens([1, 2, 3, 4, 5, 6]), 3);

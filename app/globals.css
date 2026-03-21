@@ -403,6 +403,437 @@ body {
   cursor: not-allowed;
 }
 
+.dfh-wc-kbd {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 4px;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+/* ── Array Trace Visualizer ──────────────────────────────────────────────── */
+
+.dfh-trace {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-alt);
+  overflow: hidden;
+  margin: 1.25rem 0;
+}
+
+.dfh-trace-body {
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.dfh-trace-array {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.dfh-trace-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dfh-trace-cell {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 17px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, opacity 0.18s;
+}
+
+.dfh-trace-cell.confirmed {
+  background: var(--green-tint);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.dfh-trace-cell.write-target {
+  background: var(--bg-alt);
+  border-color: var(--green);
+  border-style: dashed;
+  color: var(--fg);
+}
+
+.dfh-trace-cell.reading-keep {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.dfh-trace-cell.reading-skip {
+  background: var(--bg-highlight);
+  border-color: var(--border);
+  color: var(--fg-comment);
+  opacity: 0.6;
+}
+
+.dfh-trace-cell.reading {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--fg);
+}
+
+.dfh-trace-cell.graveyard {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg-gutter);
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+.dfh-trace-cell.active {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--fg);
+}
+
+.dfh-trace-cell.unvisited {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg-alt);
+  opacity: 0.55;
+}
+
+.dfh-trace-cell.irrelevant {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg-gutter);
+  opacity: 0.2;
+}
+
+.dfh-trace-idx {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10px;
+  color: var(--fg-gutter);
+  line-height: 1;
+}
+
+.dfh-trace-ptrs {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dfh-ptr {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 3px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.dfh-ptr.reader {
+  background: var(--blue-tint);
+  color: var(--blue);
+}
+
+.dfh-ptr.writer {
+  background: var(--green-tint);
+  color: var(--green);
+}
+
+.dfh-ptr.both {
+  background: var(--blue-tint);
+  color: var(--blue);
+  gap: 3px;
+}
+
+.dfh-trace-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 36px;
+}
+
+.dfh-trace-badge {
+  flex-shrink: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  margin-top: 1px;
+}
+
+.dfh-trace-badge.action-keep {
+  background: var(--green-tint);
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+
+.dfh-trace-badge.action-skip {
+  background: var(--bg-highlight);
+  color: var(--fg-comment);
+  border: 1px solid var(--border);
+}
+
+.dfh-trace-badge.action-done {
+  background: var(--purple-tint);
+  color: var(--purple);
+  border: 1px solid var(--purple);
+}
+
+.dfh-trace-label {
+  font-size: 13px;
+  color: var(--fg-alt);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.dfh-trace-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.dfh-trace-legend {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--fg-comment);
+  align-items: center;
+}
+
+.dfh-trace-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dfh-trace-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dfh-trace-btn {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--fg);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+}
+
+.dfh-trace-btn:hover:not(:disabled) {
+  background: var(--bg-highlight);
+}
+
+.dfh-trace-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dfh-trace-counter {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: var(--fg-comment);
+  min-width: 44px;
+  text-align: center;
+}
+
+/* ── Two-Pointer Trace ───────────────────────────────────────────────────── */
+
+.dfh-trace-cell.tp-verified {
+  background: var(--green-tint);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.dfh-trace-cell.tp-left {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.dfh-trace-cell.tp-right {
+  background: var(--orange-tint);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.dfh-trace-cell.tp-both {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.dfh-trace-cell.tp-unchecked {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg-alt);
+  opacity: 0.6;
+}
+
+.dfh-trace-cell.tp-mismatch {
+  background: color-mix(in srgb, var(--red) 12%, var(--bg-alt));
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.dfh-trace-cell.tp-middle {
+  background: var(--purple-tint);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.dfh-ptr.tp-l-ptr  { background: var(--blue-tint);   color: var(--blue); }
+.dfh-ptr.tp-r-ptr  { background: var(--orange-tint);  color: var(--orange); }
+.dfh-ptr.tp-both-ptr { background: var(--blue-tint);  color: var(--blue); }
+
+.dfh-trace-badge.action-match    { background: var(--green-tint);  color: var(--green);  border: 1px solid var(--green); }
+.dfh-trace-badge.action-mismatch { background: color-mix(in srgb, var(--red) 12%, var(--bg-alt)); color: var(--red); border: 1px solid var(--red); }
+.dfh-trace-badge.action-done     { background: var(--purple-tint); color: var(--purple); border: 1px solid var(--purple); }
+
+/* ── Prefix/Suffix Trace ─────────────────────────────────────────────────── */
+
+.ps-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.ps-acc {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+}
+
+.ps-acc-name { color: var(--fg-comment); }
+.ps-acc-eq   { color: var(--fg-gutter); }
+.ps-acc-val  { color: var(--fg); font-weight: 700; }
+
+.dfh-trace-badge.ps-fwd  { background: var(--blue-tint);   color: var(--blue);   border: 1px solid var(--blue); }
+.dfh-trace-badge.ps-bwd  { background: var(--orange-tint); color: var(--orange); border: 1px solid var(--orange); }
+.dfh-trace-badge.ps-done { background: var(--green-tint);  color: var(--green);  border: 1px solid var(--green); }
+
+.ps-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ps-row-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 0;
+}
+
+.ps-row-label {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: var(--fg-gutter);
+  white-space: nowrap;
+}
+
+.ps-cols {
+  display: flex;
+  gap: 6px;
+}
+
+.ps-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* nums row cells */
+.dfh-trace-cell.ps-nums-cell {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  color: var(--fg-alt);
+  opacity: 0.7;
+}
+
+.dfh-trace-cell.ps-nums-active {
+  background: var(--bg-highlight);
+  border-color: var(--fg-gutter);
+  color: var(--fg);
+  opacity: 1;
+}
+
+/* result row cells */
+.dfh-trace-cell.ps-empty {
+  background: var(--bg-alt);
+  border-color: var(--border);
+  border-style: dashed;
+  color: var(--fg-gutter);
+  opacity: 0.5;
+}
+
+.dfh-trace-cell.ps-filled {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--blue);
+  opacity: 0.75;
+}
+
+.dfh-trace-cell.ps-active-fwd {
+  background: var(--blue-tint);
+  border-color: var(--blue);
+  color: var(--blue);
+  opacity: 1;
+}
+
+.dfh-trace-cell.ps-active-bwd {
+  background: var(--green-tint);
+  border-color: var(--green);
+  color: var(--green);
+  opacity: 1;
+}
+
+.dfh-trace-cell.ps-final {
+  background: var(--green-tint);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.ps-legend-fwd { font-size: 11px; color: var(--blue);  }
+.ps-legend-bwd { font-size: 11px; color: var(--green); }
+
+.dfh-trace-legend span.ps-legend-fwd,
+.dfh-trace-legend span.ps-legend-bwd {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── End Array Trace ─────────────────────────────────────────────────────── */
+
 .dfh-wc-output {
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
   font-size: 0.8125rem;
