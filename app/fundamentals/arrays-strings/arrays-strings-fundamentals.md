@@ -51,9 +51,31 @@ Now you understand the tools. Let's build them step by step.
 
 ### How I Think Through This
 
-When I see an array or string problem, the first question I ask is: _am I being asked to modify the array in-place, or am I computing something about it?_ If in-place, I reach for the write cursor — `r` scans everything, `w` only advances on keepers, and `w` at the end is both the count and the boundary. If the array is sorted or I need to check symmetry end-to-end, two converging pointers from L=0 and R=n-1 let me eliminate one position per step without any extra space. If each position needs to know about everything to its left _and_ its right simultaneously, I do a forward pass to build prefix values into the output array, then a backward pass to multiply in suffix values. The key signal for the last pattern is "except self" or "combining left and right context."
+The first question I ask when I see an array or string problem is: _am I being asked to modify the array in-place, or am I computing something about it?_ That one question usually tells me which of the three tools to reach for.
 
-Take `[1, 2, 3, 4]`, find product except self: I can't divide (what if there's a zero?), so I send both messengers. Forward: result becomes `[1, 1, 2, 6]` — each slot now holds the product of everything to its left. Backward: I multiply in suffix values, right-to-left, `suffix` starts at 1. After position 3: `6 * 1 = 6`, suffix becomes 4. After position 2: `2 * 4 = 8`, suffix becomes 12. After position 1: `1 * 12 = 12`, suffix becomes 24. After position 0: `1 * 24 = 24`. Result: `[24, 12, 8, 6]` ✓
+#### Write Cursor
+
+When the problem says "in-place" or "O(1) extra space" and asks me to remove or filter elements, I know I need the write cursor. I place `w = 0` at the front, then let `r` scan every element. Every time `r` finds a keeper, I write it to `nums[w]` and bump `w` forward. Non-keepers — I just move `r` on and leave `w` where it is.
+
+The thing I have to remind myself: write _first_, then increment. If I do `w++; nums[w] = nums[r]` I skip slot 0 and the count is wrong. The other thing I keep in mind is that `w` serves double duty — it's both where I write next _and_ the count of valid elements placed so far. When the loop ends, I return `w`, not `w - 1`.
+
+#### Two Converging Pointers
+
+When the array is sorted, or the problem involves symmetry (palindrome, reverse, two-sum on a sorted array), I reach for two pointers starting at opposite ends: `L = 0`, `R = n - 1`.
+
+At each step I ask: what does comparing `arr[L]` and `arr[R]` tell me, and which pointer should move? For a palindrome check, a mismatch means I'm done — I return false immediately. A match means both move inward. For a sorted two-sum, if the pair sums too low I move `L` right (larger values are to the right), if it sums too high I move `R` left. Either way, each step eliminates one position from further consideration, so the whole thing runs in O(n).
+
+The loop condition I always use is `L < R`, not `L <= R`. When `L === R` I'm sitting on the middle character of an odd-length string — it trivially matches itself and there's nothing to check.
+
+#### Prefix & Suffix Passes
+
+When each position needs to combine information from everything to its left _and_ everything to its right, I know a single pass won't cut it. The signal phrase I look for is "except self" or "without using division."
+
+I run two passes over the output array. Forward pass: I track a running `prefix` (starts at `1`) and before I touch position `i`, I write `result[i] = prefix`, then update `prefix *= nums[i]`. After the forward pass, `result[i]` holds the product of everything strictly to `i`'s left.
+
+Backward pass: I track a running `suffix` (starts at `1`) and walk right-to-left. At each position I multiply `result[i] *= suffix`, then update `suffix *= nums[i]`. Now `result[i]` holds the product of everything to the left _and_ everything to the right — without ever including `nums[i]` itself.
+
+The order-of-operations matters: I always read `result[i]` (or set it) before updating the running variable, because the running variable represents what's accumulated _before_ the current position, not including it.
 
 ---
 
