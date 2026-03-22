@@ -1,234 +1,193 @@
 # Product of Array Except Self - Mental Model
 
-## The Two Messengers Analogy
+## The Problem
 
-Understanding this problem is like two messengers traveling through a row of villages, each collecting harvest tallies as they go — and leaving just the right record at every stop.
+Given an integer array `nums`, return an array `answer` such that `answer[i]` is equal to the product of all the elements of `nums` except `nums[i]`. The product of any prefix or suffix of `nums` is guaranteed to fit in a 32-bit integer. You must write an algorithm that runs in O(n) time and without using the division operation.
+
+**Example 1:**
+```
+Input: nums = [1,2,3,4]
+Output: [24,12,8,6]
+```
+
+**Example 2:**
+```
+Input: nums = [-1,1,0,-3,3]
+Output: [0,0,9,0,0]
+```
 
 ---
 
-## Understanding the Analogy (No Code Yet!)
+## The Two Messengers Analogy
+
+Imagine a row of villages along a single road. Each village has a harvest number posted on a sign. Every village needs to know the **combined product of every other village's harvest** — but not its own. The village elders solve this by sending out two messengers: one walks east (left to right), one walks west (right to left). Each carries a running tally — the product of all harvests they've absorbed so far.
+
+Both messengers follow one strict rule at every village: **write your current tally on the village's board first, then absorb this harvest into your tally.** Writing before absorbing guarantees that no village ever sees its own harvest in the tally left for it.
+
+After both messengers have completed their journeys, each village's board holds: "everything to my left" × "everything to my right" — which is exactly the product of every other village. No messenger ever needed to see the full product. No division was required. Each messenger only ever looked forward.
+
+---
+
+## Understanding the Analogy
 
 ### The Setup
 
-Imagine a row of villages along a single road. Each village has a harvest number posted on a sign. Every village needs to know the **combined product of every other village's harvest** — but NOT its own. No village can see any other village's sign directly.
+There are four villages in a row, each with a harvest posted on a sign: `[1, 2, 3, 4]`. Every village needs to display the product of all *other* harvests. Village 2 (harvest 3), for example, needs to display `1 × 2 × 4 = 8`. We can't just compute the total product and divide it out — what if a village's harvest is zero? Instead we split each village's answer into two natural groups: everything before me, and everything after me.
 
-The village elders send out **two messengers**:
-- An **eastbound messenger** who starts at the western edge and walks east (left to right)
-- A **westbound messenger** who starts at the eastern edge and walks west (right to left)
+### The Messenger Rule
 
-Each messenger carries a **running tally** — a product of all the harvests they've absorbed so far. Both messengers start with a tally of **1** (they haven't seen any harvests yet).
+Both messengers follow the same rule: write tally first, absorb after. This ordering is everything. If a messenger absorbed first and then wrote their tally, the number they left on the board would already include the current village's harvest. By writing their tally down *before* picking up the current harvest, each messenger leaves a clean record of every village they passed through on the way *here* — and nothing more.
 
-### How It Works
+The **eastbound messenger** starts at the western edge with a tally of 1 (the product of nothing). At each village they write their tally onto the board, then multiply the current harvest into their tally before continuing east. When they're done, every board slot holds the product of everything to that village's left.
 
-Every messenger follows the same rule at each village they visit:
+The **westbound messenger** starts at the eastern edge, also with a tally of 1. At each village they multiply their tally *into* whatever the eastbound messenger already wrote on the board, then absorb the current harvest before continuing west. When they're done, every board slot has been updated to hold the product of all villages except itself.
 
-1. **First**, write your current tally on the village's board
-2. **Then**, absorb this village's harvest into your tally
-3. Continue walking to the next village
+The westbound messenger doesn't need a separate board — they combine their right-side tally directly with the left-side tally already written there. Multiplying in rather than replacing is what stitches both halves together.
 
-The order matters enormously. By writing their tally **before** absorbing the current harvest, the messenger ensures that what they write on the board never includes the current village. It only captures everything they passed through on the way here.
+### Why This Approach
 
-The **eastbound messenger** walks left to right. When they arrive at a village, their tally holds the product of everything to the **left** — all the harvests they absorbed before this stop. They write that down, absorb the current harvest, and continue east.
+Every village's answer is missing exactly one thing from the full product: itself. That one missing piece splits naturally into two sides. Two passes, one for each side, cover every element exactly once. Neither pass needs to know about the other — the eastbound messenger has no idea a westbound messenger is coming, and vice versa. Their work combines at the very end in a single multiplication per village.
 
-The **westbound messenger** then walks right to left. At each village, their tally holds the product of everything to the **right**. They don't need a separate slot — they just multiply their right-side tally directly into what the eastbound messenger already wrote. Then they absorb this village's harvest and continue west.
+The naive alternative — compute the total product, divide each element out — fails the moment any harvest is zero. This approach never divides. It never even computes a total. Each village's answer is assembled from two sub-products that were naturally computed without ever touching that village.
 
-After both messengers have passed through, every village's board reads:
+### Simple Example Through the Analogy
 
-> eastbound tally × westbound tally = (product of everything to my left) × (product of everything to my right) = **product of everything except me**
+Villages with harvests `[1, 2, 3, 4]`. Both messengers start with tally = 1.
 
-### Why This Approach Works
+**Eastbound messenger walks left to right:**
 
-Think about what each village is missing from the total product — just one thing: itself. That means everything it needs is split into two natural groups: **everything before me** and **everything after me**. The eastbound messenger perfectly accumulates the first group, the westbound messenger accumulates the second. Neither messenger ever includes the current village in the tally they hand off, because they write before they absorb.
+Village 0 (harvest 1): Write 1 on the board, absorb 1 → tally is now 1.
+Village 1 (harvest 2): Write 1 on the board, absorb 2 → tally is now 2.
+Village 2 (harvest 3): Write 2 on the board, absorb 3 → tally is now 6.
+Village 3 (harvest 4): Write 6 on the board. Done.
 
-This is also why we never need division. Instead of computing the full product and dividing out each element (which breaks when any harvest is 0), we simply never include that element in the first place.
+Board after eastbound: `[1, 1, 2, 6]` — each slot holds the product of everything to its left.
+
+**Westbound messenger walks right to left:**
+
+Village 3 (harvest 4): Multiply 1 into board → 6 × 1 = 6, absorb 4 → tally is now 4.
+Village 2 (harvest 3): Multiply 4 into board → 2 × 4 = 8, absorb 3 → tally is now 12.
+Village 1 (harvest 2): Multiply 12 into board → 1 × 12 = 12, absorb 2 → tally is now 24.
+Village 0 (harvest 1): Multiply 24 into board → 1 × 24 = 24. Done.
+
+Final board: `[24, 12, 8, 6]`. Every village now displays the product of all other harvests.
+
+Now you understand HOW to solve the problem. Let's build it step by step.
 
 ---
 
 ## How I Think Through This
 
-Each position's answer is the product of every element except itself. I think of that as two halves — everything to my left, and everything to my right — because together those two groups cover every element except the one sitting at the current position, so multiplying them gives the answer. To collect both halves I make two passes. First I walk left to right keeping a `leftProduct` that starts at 1. At each position I write `leftProduct` into the output array, then multiply the current element into it before moving on. Writing before updating is the key — each slot ends up holding the compressed product of everything before it, never including itself. Then I walk right to left with a `rightTally` that also starts at 1. At each position I multiply `rightTally` into the output slot — the slot already holds the left product, so now it holds both halves combined. Then I multiply the current element into `rightTally` before stepping left, so the next position's right product includes this one.
+Each position's answer is the product of every element except itself, which splits into two natural groups: everything to my left and everything to my right. I make two passes — one per group. First I walk left to right keeping a `leftTally` that starts at 1. At each position I write `leftTally` into the output board, then multiply the current element into it before moving on. The write-before-absorb order is the core invariant: every slot ends up holding the compressed product of everything before it, never including itself. Then I walk right to left with a `rightTally` that also starts at 1. At each position I multiply `rightTally` into the board slot — the slot already holds the left product, so after the multiply it holds both halves combined. Then I multiply the current element into `rightTally` before stepping left.
 
-Take `[1, 2, 3, 4]`. Left pass, `leftProduct` starts at 1: position 0 writes 1, `leftProduct` becomes 1. Position 1 writes 1, `leftProduct` becomes 2. Position 2 writes 2, `leftProduct` becomes 6. Position 3 writes 6. Output is now `[1, 1, 2, 6]` — each slot is the product of everything to its left. Right pass, `rightTally` starts at 1: position 3 has 6, multiply in 1 → 6, then `rightTally` becomes 4. Position 2 has 2, multiply in 4 → 8, then `rightTally` becomes 12. Position 1 has 1, multiply in 12 → 12, then `rightTally` becomes 24. Position 0 has 1, multiply in 24 → 24. Final output: `[24, 12, 8, 6]`.
-
----
-
-### Simple Example Through the Analogy
-
-Villages with harvests: `[1, 2, 3, 4]`
-
-**Eastbound messenger (left → right), starting tally = 1:**
-
-| Village               | Arrives with tally | Writes on board | Absorbs harvest | Leaves with tally |
-|-----------------------|--------------------|-----------------|-----------------|-------------------|
-| Village 0 (harvest 1) | 1                  | **1**           | 1 × 1           | 1                 |
-| Village 1 (harvest 2) | 1                  | **1**           | 1 × 2           | 2                 |
-| Village 2 (harvest 3) | 2                  | **2**           | 2 × 3           | 6                 |
-| Village 3 (harvest 4) | 6                  | **6**           | 6 × 4           | 24                |
-
-Board after eastbound: `[1, 1, 2, 6]`
-
-Each village's board now holds: "the product of every village to my left."
-
-**Westbound messenger (right → left), starting tally = 1:**
-
-| Village               | Arrives with tally | Reads board | Board × tally = final | Absorbs harvest | Leaves with tally |
-|-----------------------|--------------------|-------------|-----------------------|-----------------|-------------------|
-| Village 3 (harvest 4) | 1                  | 6           | 6 × 1 = **6**         | 1 × 4           | 4                 |
-| Village 2 (harvest 3) | 4                  | 2           | 2 × 4 = **8**         | 4 × 3           | 12                |
-| Village 1 (harvest 2) | 12                 | 1           | 1 × 12 = **12**       | 12 × 2          | 24                |
-| Village 0 (harvest 1) | 24                 | 1           | 1 × 24 = **24**       | 24 × 1          | 24                |
-
-Final board: `[24, 12, 8, 6]`
-
-Verify: `[2×3×4, 1×3×4, 1×2×4, 1×2×3]` = `[24, 12, 8, 6]`. Correct!
-
-Now you understand HOW to solve the problem. Let's translate this to code.
+Take `[1, 2, 3, 4]`. Left pass, `leftTally` starts at 1: position 0 writes 1 then `leftTally` becomes 1; position 1 writes 1 then `leftTally` becomes 2; position 2 writes 2 then `leftTally` becomes 6; position 3 writes 6. Board is `[1, 1, 2, 6]`. Right pass, `rightTally` starts at 1: position 3 multiplies in 1 → 6×1=6 then `rightTally` becomes 4; position 2 multiplies in 4 → 2×4=8 then `rightTally` becomes 12; position 1 multiplies in 12 → 1×12=12 then `rightTally` becomes 24; position 0 multiplies in 24 → 1×24=24. Final board: `[24, 12, 8, 6]` ✓.
 
 ---
 
-## Building the Algorithm Step-by-Step
+## Building the Algorithm
 
-### Step 1: Set Up the Village Board
+Each step introduces one concept from the two-messenger analogy, then a StackBlitz embed to try it.
 
-**In our analogy:** We need a board at each village to record tallies from both messengers.
+### Step 1: Eastbound Messenger — Left Products
 
-**In code:**
+Before either messenger sets out, every village needs a board to record tallies. The board starts empty — one slot per village. Then the eastbound messenger begins their journey with a tally of 1 (the product of nothing seen yet). At each village, the messenger writes their current tally to the board *before* absorbing the harvest. Ask yourself: why does writing before absorbing ensure the slot never includes the current village? What does the board hold after the eastbound messenger finishes?
+
+:::trace-ps
+[
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":-1,"pass":"forward","accumulator":1,"accName":"prefix","label":"Eastbound messenger sets out — board initialized, eastTally = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":0,"pass":"forward","accumulator":1,"accName":"prefix","label":"Village 0 (harvest 1): write eastTally=1 → board[0]=1, absorb → eastTally = 1×1 = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":1,"pass":"forward","accumulator":2,"accName":"prefix","label":"Village 1 (harvest 2): write eastTally=1 → board[1]=1, absorb → eastTally = 1×2 = 2."},
+  {"nums":[1,2,3,4],"result":[1,1,2,1],"currentI":2,"pass":"forward","accumulator":6,"accName":"prefix","label":"Village 2 (harvest 3): write eastTally=2 → board[2]=2, absorb → eastTally = 2×3 = 6."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"forward","accumulator":24,"accName":"prefix","label":"Village 3 (harvest 4): write eastTally=6 → board[3]=6, absorb → eastTally = 6×4 = 24."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":-1,"pass":"done","accumulator":0,"accName":"","label":"Eastbound complete — board[i] holds the product of every village to the left of i."}
+]
+:::
+
 ```typescript
 function productExceptSelf(nums: number[]): number[] {
-  const board = new Array(nums.length);
+  // initialize the village board — one slot per village
+
+  // eastbound messenger starts with tally = 1
+  // for each village:
+  //   write tally to board[i]       ← BEFORE absorbing
+  //   absorb nums[i] into tally     ← AFTER writing
+
+  // return board (holds left products — step 2 will complete it)
 }
 ```
 
-**Why:** One array to hold both messengers' contributions. We'll use the same slots for both passes.
+:::stackblitz{file="step1-problem.ts" step=1 total=2 solution="step1-solution.ts"}
 
-### Step 2: Eastbound Messenger — Left to Right
+### Step 2: Westbound Messenger — Combined Products
 
-**In our analogy:** The eastbound messenger walks left to right. At each village, they write their current tally first, then absorb the harvest.
+The board now holds the left product at every slot. The westbound messenger starts at the eastern edge with a tally of 1 and walks west. At each village, they multiply their tally *into* the board slot — not replace it — so the slot's left product and the messenger's right-side tally are combined. Then they absorb the current harvest before stepping left. After both messengers have passed through, every slot holds the product of everything except itself.
 
-**Adding to our code:**
+Consider: why does the westbound messenger multiply into the board rather than write a fresh value? What would happen if they replaced the slot instead?
+
+:::trace-ps
+[
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":-1,"pass":"backward","accumulator":1,"accName":"suffix","label":"Westbound messenger sets out — board holds left products from Step 1, westTally = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"backward","accumulator":4,"accName":"suffix","label":"Village 3 (harvest 4): board[3]×westTally=1 → 6×1=6, absorb → westTally = 1×4 = 4."},
+  {"nums":[1,2,3,4],"result":[1,1,8,6],"currentI":2,"pass":"backward","accumulator":12,"accName":"suffix","label":"Village 2 (harvest 3): board[2]×westTally=4 → 2×4=8, absorb → westTally = 4×3 = 12."},
+  {"nums":[1,2,3,4],"result":[1,12,8,6],"currentI":1,"pass":"backward","accumulator":24,"accName":"suffix","label":"Village 1 (harvest 2): board[1]×westTally=12 → 1×12=12, absorb → westTally = 12×2 = 24."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":0,"pass":"backward","accumulator":24,"accName":"suffix","label":"Village 0 (harvest 1): board[0]×westTally=24 → 1×24=24, absorb → westTally = 24×1 = 24."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":-1,"pass":"done","accumulator":0,"accName":"","label":"Westbound complete — every slot now holds left × right = product of all except itself."}
+]
+:::
+
 ```typescript
 function productExceptSelf(nums: number[]): number[] {
-  const board = new Array(nums.length);
+  // ✓ Step 1: Eastbound pass (locked)
 
-  let eastTally = 1;
-  for (let i = 0; i < nums.length; i++) {
-    board[i] = eastTally;     // Write BEFORE absorbing — excludes current village
-    eastTally *= nums[i];     // Absorb this village's harvest, then move on
-  }
+  // westbound messenger starts with tally = 1, walks right to left
+  // for each village (right to left):
+  //   multiply tally into board[i]   ← combines left × right products
+  //   absorb nums[i] into tally      ← AFTER combining
+
+  // return board (now the final answer)
 }
 ```
 
-**Why:** After this loop, `board[i]` holds the product of everything to the left of `i`. Village 0 receives `1` (nothing to its left), which is correct.
-
-### Step 3: Westbound Messenger — Right to Left
-
-**In our analogy:** The westbound messenger walks right to left. At each village, they multiply their right-side tally into the existing board value, then absorb the harvest.
-
-**Complete algorithm:**
-```typescript
-function productExceptSelf(nums: number[]): number[] {
-  const board = new Array(nums.length);
-
-  let eastTally = 1;
-  for (let i = 0; i < nums.length; i++) {
-    board[i] = eastTally;
-    eastTally *= nums[i];
-  }
-
-  let westTally = 1;
-  for (let i = nums.length - 1; i >= 0; i--) {
-    board[i] *= westTally;    // Combine: left product × right product
-    westTally *= nums[i];     // Absorb this village's harvest, then move on
-  }
-
-  return board;
-}
-```
-
-**Why:** The westbound messenger multiplies their right-side tally with the left-side tally already on the board. Together they produce the product of everything except the current village.
+:::stackblitz{file="step2-problem.ts" step=2 total=2 solution="step2-solution.ts"}
 
 ---
 
-## Tracing Through an Example
+## Tracing through an Example
 
-**Input:** `[2, 3, 4, 5]`
+**Input:** `[1, 2, 3, 4]`
 
-```mermaid
-sequenceDiagram
-    participant E as Eastbound Messenger
-    participant B as Village Board
-    participant W as Westbound Messenger
-
-    Note over E: eastTally = 1
-    E->>B: board[0] = 1, absorb 2 → eastTally = 2
-    E->>B: board[1] = 2, absorb 3 → eastTally = 6
-    E->>B: board[2] = 6, absorb 4 → eastTally = 24
-    E->>B: board[3] = 24, absorb 5 → eastTally = 120
-
-    Note over B: Board: [1, 2, 6, 24]
-    Note over W: westTally = 1
-
-    W->>B: board[3] = 24×1 = 24, absorb 5 → westTally = 5
-    W->>B: board[2] = 6×5 = 30, absorb 4 → westTally = 20
-    W->>B: board[1] = 2×20 = 40, absorb 3 → westTally = 60
-    W->>B: board[0] = 1×60 = 60, absorb 2 → westTally = 120
-
-    Note over B: Final: [60, 40, 30, 24]
-```
-
-Verify: `[3×4×5, 2×4×5, 2×3×5, 2×3×4]` = `[60, 40, 30, 24]`. Correct!
+:::trace-ps
+[
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":-1,"pass":"forward","accumulator":1,"accName":"prefix","label":"Eastbound pass begins — board initialized, eastTally = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":0,"pass":"forward","accumulator":1,"accName":"prefix","label":"Village 0 (harvest 1): write eastTally=1 to board[0], absorb → eastTally = 1×1 = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,1,1],"currentI":1,"pass":"forward","accumulator":2,"accName":"prefix","label":"Village 1 (harvest 2): write eastTally=1 to board[1], absorb → eastTally = 1×2 = 2."},
+  {"nums":[1,2,3,4],"result":[1,1,2,1],"currentI":2,"pass":"forward","accumulator":6,"accName":"prefix","label":"Village 2 (harvest 3): write eastTally=2 to board[2], absorb → eastTally = 2×3 = 6."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"forward","accumulator":24,"accName":"prefix","label":"Village 3 (harvest 4): write eastTally=6 to board[3], absorb → eastTally = 6×4 = 24. Eastbound complete."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":-1,"pass":"backward","accumulator":1,"accName":"suffix","label":"Westbound pass begins — board holds left products, westTally = 1."},
+  {"nums":[1,2,3,4],"result":[1,1,2,6],"currentI":3,"pass":"backward","accumulator":4,"accName":"suffix","label":"Village 3 (harvest 4): board[3]×westTally=1 → 6×1=6, absorb → westTally = 1×4 = 4."},
+  {"nums":[1,2,3,4],"result":[1,1,8,6],"currentI":2,"pass":"backward","accumulator":12,"accName":"suffix","label":"Village 2 (harvest 3): board[2]×westTally=4 → 2×4=8, absorb → westTally = 4×3 = 12."},
+  {"nums":[1,2,3,4],"result":[1,12,8,6],"currentI":1,"pass":"backward","accumulator":24,"accName":"suffix","label":"Village 1 (harvest 2): board[1]×westTally=12 → 1×12=12, absorb → westTally = 12×2 = 24."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":0,"pass":"backward","accumulator":24,"accName":"suffix","label":"Village 0 (harvest 1): board[0]×westTally=24 → 1×24=24, absorb → westTally = 24×1 = 24. Westbound complete."},
+  {"nums":[1,2,3,4],"result":[24,12,8,6],"currentI":-1,"pass":"done","accumulator":0,"accName":"","label":"Done — board = [24, 12, 8, 6] ✓"}
+]
+:::
 
 ---
 
 ## Common Misconceptions
 
-### ❌ "The messenger absorbs the harvest before writing on the board"
+**"The messenger should absorb the harvest before writing on the board."** — If the messenger picks up the harvest first, the tally they write already contains the current village's contribution. That village's board slot would then reflect its own harvest, not just everyone else's. The strict rule is: write the clean tally first, then absorb.
 
-If the messenger absorbs first, the tally they write includes the current village — which breaks everything. The rule is always: write first, absorb after.
+**"The westbound messenger should write their tally to the board, not multiply into it."** — By the time the westbound messenger arrives, the board already holds the eastbound messenger's work — the product of everything to the left. Writing a fresh value would erase that. The westbound messenger's job is to combine both halves, not replace one with the other.
 
-```typescript
-// WRONG: current village contaminates the board
-eastTally *= nums[i];
-board[i] = eastTally;
+**"This approach breaks when the array contains zeros."** — Zeros are handled naturally. Once the eastbound messenger absorbs a zero harvest, their tally becomes zero and stays zero for every village further east. Those villages correctly receive a zero left-product, because the element at that zero position IS one of the elements they should multiply. No special casing is needed.
 
-// CORRECT: write the clean tally first, then absorb
-board[i] = eastTally;
-eastTally *= nums[i];
-```
+**"Starting both tallies at 0 would be equivalent to starting at 1."** — The product of an empty set of villages is 1 — the multiplicative identity. Village 0 has nothing to its left, so its left product should be 1. Starting at 0 would make every tally zero immediately, producing an all-zeros board regardless of the input.
 
-### ❌ "The westbound messenger should replace the board value, not multiply into it"
-
-The board already holds the eastbound tally (left product). The westbound messenger's job is to **combine** the right product with it — not overwrite it.
-
-```typescript
-// WRONG: throws away the eastbound messenger's work
-board[i] = westTally;
-
-// CORRECT: combines both messengers' contributions
-board[i] *= westTally;
-```
-
-### ✅ "Starting both tallies at 1 is correct"
-
-Before either messenger has seen any village, the product of "nothing" is 1 — the multiplicative identity. Starting at 0 would zero out every tally permanently.
+**"You need a separate left-products array and a separate right-products array."** — That's the natural first instinct, and it works — but it requires O(n) extra space. The key insight is that the eastbound pass fills the board, and the westbound pass updates it in place. The board serves both purposes because the westbound pass reads and updates from right to left, so by the time it reaches position i, every slot to the right of i has already been finalized and no slot to the left has been touched yet.
 
 ---
 
-## Complexity
+## Complete Solution
 
-- **Time: O(n)** — Two passes through the array, each visiting every village once
-- **Space: O(1)** — Only two tally variables beyond the output array (the output array itself doesn't count as extra space per the problem's definition)
-
----
-
-## Try It Yourself
-
-**Villages:** `[1, 0, 3, 2]`
-
-1. Walk the eastbound messenger. What does each village's board show after the first pass?
-2. Walk the westbound messenger. What's the final board?
-3. Why doesn't the zero cause a problem here?
-
-**Expected answer:** `[0, 6, 0, 0]`
-
-**Hint for question 3:** Once the eastbound messenger absorbs village 1's harvest of 0, their tally becomes 0 — which correctly propagates to villages 2 and 3, since they all have 0 to their left. The algorithm handles zeros naturally without any special casing.
+:::stackblitz{file="solution.ts" step=2 total=2 solution="solution.ts"}
