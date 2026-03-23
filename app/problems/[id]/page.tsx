@@ -5,7 +5,10 @@ import {
   getProblemById,
   readMarkdownFile,
 } from '@/lib/content';
-import { getSectionsForProblem } from '@/lib/journey';
+import { getSectionsForProblem, getPhaseForSection } from '@/lib/journey';
+
+const PHASE_COLORS = ['var(--purple)', 'var(--blue)', 'var(--green)', 'var(--orange)', 'var(--cyan)']
+const phaseColor = (n: number) => PHASE_COLORS[(n - 1) % PHASE_COLORS.length]
 import { extractHeadings } from '@/lib/headings';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
 import TableOfContents from '@/components/TableOfContents';
@@ -37,6 +40,8 @@ export default function ProblemPage({ params }: Props) {
     : [];
   const journeySections = getSectionsForProblem(params.id);
   const primarySection = journeySections[0];
+  const phase = primarySection ? getPhaseForSection(primarySection.id) : undefined;
+  const color = phase ? phaseColor(phase.number) : null;
 
   let prevProblem = null;
   let nextProblem = null;
@@ -56,6 +61,12 @@ export default function ProblemPage({ params }: Props) {
   }
 
   return (
+    <div style={{
+      marginLeft: '-24px', marginRight: '-24px',
+      background: color ? `color-mix(in srgb, ${color} 8%, var(--bg))` : 'var(--bg)',
+      padding: '0 24px',
+      minHeight: '100vh',
+    }}>
     <div
       className="block lg:grid w-full items-start"
       style={{ gridTemplateColumns: '260px 1fr', columnGap: '6rem' }}
@@ -156,6 +167,7 @@ export default function ProblemPage({ params }: Props) {
         </div>
       </article>
 
+    </div>
     </div>
   );
 }

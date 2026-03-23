@@ -1,4 +1,7 @@
 import { notFound } from 'next/navigation';
+
+const PHASE_COLORS = ['var(--purple)', 'var(--blue)', 'var(--green)', 'var(--orange)', 'var(--cyan)']
+const phaseColor = (n: number) => PHASE_COLORS[(n - 1) % PHASE_COLORS.length]
 import Link from 'next/link';
 import {
   getFundamentalsGuide,
@@ -26,6 +29,7 @@ export default function FundamentalsPage({ params }: Props) {
   const section = context?.section;
   const phase = context?.phase;
   const prereq = getPrecedingSection(params.slug);
+  const color = phase ? phaseColor(phase.number) : null;
 
   // Strip the leading # h1 and the > Prerequisites blockquote from the markdown
   // so they don't duplicate what the page header already renders
@@ -37,6 +41,12 @@ export default function FundamentalsPage({ params }: Props) {
   const headings = extractHeadings(strippedContent);
 
   return (
+    <div style={{
+      marginLeft: '-24px', marginRight: '-24px',
+      background: color ? `color-mix(in srgb, ${color} 8%, var(--bg))` : 'var(--bg)',
+      padding: '0 24px',
+      minHeight: '100vh',
+    }}>
     <div
       className="block lg:grid w-full items-start"
       style={{
@@ -170,6 +180,7 @@ export default function FundamentalsPage({ params }: Props) {
           )}
         </div>
       </article>
+    </div>
     </div>
   );
 }

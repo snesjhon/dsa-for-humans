@@ -297,12 +297,18 @@ export default function MarkdownRenderer({
         if (seg.type === 'stackblitz') {
           const slug = problemSlug ?? fundamentalsSlug;
           if (!slug) return null;
+          const isSolutionOnly = seg.file === seg.solution;
           return (
             <WebContainerEmbed
               key={i}
-              tabs={[
-                { label: 'Solution', file: seg.solution },
-              ]}
+              tabs={
+                isSolutionOnly
+                  ? [{ label: 'Solution', file: seg.solution }]
+                  : [
+                      { label: `Step ${seg.step}`, file: seg.file },
+                      { label: 'Solution', file: seg.solution },
+                    ]
+              }
               step={seg.step}
               total={seg.total}
               problemSlug={slug}
