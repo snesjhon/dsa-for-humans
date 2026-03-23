@@ -301,7 +301,6 @@ export default function MarkdownRenderer({
             <WebContainerEmbed
               key={i}
               tabs={[
-                { label: 'Try It', file: seg.file },
                 { label: 'Solution', file: seg.solution },
               ]}
               step={seg.step}

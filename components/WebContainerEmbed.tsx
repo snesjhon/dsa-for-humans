@@ -407,9 +407,11 @@ export default function WebContainerEmbed({
             ))}
           </div>
         )}
-        <span className="dfh-wc-step">
-          Step {step} of {total}
-        </span>
+        {tabs.length > 1 && (
+          <span className="dfh-wc-step">
+            Step {step} of {total}
+          </span>
+        )}
       </div>
       <div className="dfh-wc-body">
         <div ref={editorRef} className="dfh-wc-editor" />
